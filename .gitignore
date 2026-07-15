@@ -1,0 +1,12 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Dependencies (none currently, but keep them out if added)
+/vendor/
+/node_modules/
+
+# Build / logs
+*.log

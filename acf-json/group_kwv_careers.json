@@ -1,0 +1,128 @@
+{
+	"key": "group_kwv_careers",
+	"title": "Job Details",
+	"fields": [
+		{
+			"key": "field_kwv_career_reference",
+			"label": "Reference Number",
+			"name": "kwv_career_reference",
+			"aria-label": "",
+			"type": "text",
+			"instructions": "The job's reference number, e.g. BMMS0128. Shown on the listing and recorded against each application.",
+			"required": 0,
+			"conditional_logic": 0,
+			"wrapper": {
+				"width": "",
+				"class": "",
+				"id": ""
+			},
+			"default_value": "",
+			"maxlength": "",
+			"placeholder": "e.g. BMMS0128",
+			"prepend": "",
+			"append": ""
+		},
+		{
+			"key": "field_kwv_career_location",
+			"label": "Location",
+			"name": "kwv_career_location",
+			"aria-label": "",
+			"type": "text",
+			"instructions": "Where the role is based, e.g. Paarl, Western Cape.",
+			"required": 0,
+			"conditional_logic": 0,
+			"wrapper": {
+				"width": "50",
+				"class": "",
+				"id": ""
+			},
+			"default_value": "",
+			"maxlength": "",
+			"placeholder": "e.g. Paarl, Western Cape",
+			"prepend": "",
+			"append": ""
+		},
+		{
+			"key": "field_kwv_career_department",
+			"label": "Department",
+			"name": "kwv_career_department",
+			"aria-label": "",
+			"type": "text",
+			"instructions": "The department the role sits in, e.g. Sales & Marketing.",
+			"required": 0,
+			"conditional_logic": 0,
+			"wrapper": {
+				"width": "50",
+				"class": "",
+				"id": ""
+			},
+			"default_value": "",
+			"maxlength": "",
+			"placeholder": "e.g. Sales & Marketing",
+			"prepend": "",
+			"append": ""
+		},
+		{
+			"key": "field_kwv_career_closing_date",
+			"label": "Closing Date",
+			"name": "kwv_career_closing_date",
+			"aria-label": "",
+			"type": "date_picker",
+			"instructions": "After this date the job automatically moves to Draft and drops off the listing. It stays live on the closing day itself. Leave blank for no closing date.",
+			"required": 0,
+			"conditional_logic": 0,
+			"wrapper": {
+				"width": "",
+				"class": "",
+				"id": ""
+			},
+			"display_format": "d/m/Y",
+			"return_format": "d/m/Y",
+			"first_day": 1
+		},
+		{
+			"key": "field_kwv_career_form_id",
+			"label": "Application Form",
+			"name": "kwv_career_form_id",
+			"aria-label": "",
+			"type": "select",
+			"instructions": "Choose the Gravity Forms form to embed on this job. Leave blank to use the shared \"KWV Job Application\" form.",
+			"required": 0,
+			"conditional_logic": 0,
+			"wrapper": {
+				"width": "",
+				"class": "",
+				"id": ""
+			},
+			"choices": {},
+			"default_value": "",
+			"return_format": "value",
+			"multiple": 0,
+			"allow_null": 1,
+			"ui": 1,
+			"ajax": 0,
+			"placeholder": "Use shared application form"
+		}
+	],
+	"location": [
+		[
+			{
+				"param": "post_type",
+				"operator": "==",
+				"value": "kwv_career"
+			}
+		]
+	],
+	"menu_order": 0,
+	"position": "normal",
+	"style": "default",
+	"label_placement": "top",
+	"instruction_placement": "label",
+	"hide_on_screen": [
+		"custom_fields"
+	],
+	"active": true,
+	"description": "Custom fields for the Careers (kwv_career) post type. Managed as code in the KWV Enhancements plugin's /acf-json directory.",
+	"show_in_rest": 1,
+	"modified": 1752566400
+}
