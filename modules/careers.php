@@ -159,8 +159,16 @@ function kwv_careers_render_form( $atts = array() ) {
 		return '';
 	}
 
-	$atts    = shortcode_atts( array( 'id' => get_the_ID() ), $atts, 'kwv_career_form' );
-	$form_id = kwv_careers_get_form_id( (int) $atts['id'] );
+	$atts = shortcode_atts( array( 'id' => 0 ), $atts, 'kwv_career_form' );
+
+	// Resolve the job: explicit id, else the current loop post, else the
+	// queried object (covers block-template render where the loop isn't set up).
+	$post_id = (int) $atts['id'];
+	if ( $post_id < 1 ) {
+		$post_id = (int) ( get_the_ID() ?: get_queried_object_id() );
+	}
+
+	$form_id = kwv_careers_get_form_id( $post_id );
 
 	if ( $form_id < 1 ) {
 		return '';

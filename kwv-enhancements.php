@@ -56,6 +56,7 @@ function kwv_enh_acf_json_save_point( $path ) {
 add_filter( 'acf/settings/save_json', 'kwv_enh_acf_json_save_point' );
 
 // Load modules.
+require_once KWV_ENH_DIR . 'modules/block-bindings.php';
 require_once KWV_ENH_DIR . 'modules/careers.php';
 require_once KWV_ENH_DIR . 'modules/careers-application-form.php';
 
