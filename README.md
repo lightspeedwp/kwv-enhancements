@@ -24,6 +24,22 @@ The `kwv_career` job post type and its Gravity Forms application form.
 - **Auto-expiry** — a daily WP-Cron event (`kwv_careers_expire_jobs`) moves any published job past its closing date to **Draft** (reversible, and it drops off the front-end listing which only queries published posts). A job stays live *on* its closing day.
 - **Application form** — `modules/careers-application-form.php` installs the shared "KWV Job Application" Gravity Form once and stores its id in the `kwv_careers_form_id` option. Per-job override via the Application Form field; resolution order is handled by `kwv_careers_get_form_id()`. The `[kwv_career_form]` shortcode renders whichever form a job resolves to.
 
+### Events
+
+The `kwv_event` post type for the Visit Us venues, its **Brand** taxonomy, and the dynamic booking-form dropdowns.
+
+- **Post type** `kwv_event` — title = event name, content = description, native **Featured Image**, rewrite `events/{slug}`, no archive. Registered in `modules/events.php`.
+- **Brand taxonomy** `kwv_brand` — ties each event to a venue. Seeded with **KWV Emporium**, **House of Fire** and **Cathedral Cellar** (slugs `kwv-emporium`, `house-of-fire`, `cathedral-cellar`); more can be added in the admin. Term seeding is one-time and guarded by the `kwv_events_brands_seeded` option.
+- **Custom fields** — authored with **Secure Custom Fields**, stored as code in [`acf-json/group_kwv_events.json`](acf-json/group_kwv_events.json). Field *names* match the `register_post_meta` keys.
+
+  | Field | Meta key | Notes |
+  |---|---|---|
+  | Date | `kwv_event_date` | Date picker (stored `Ymd`). **Auto-expires** the event. |
+  | Time | `kwv_event_time` | Time picker, e.g. `18:00`. |
+
+- **Auto-expiry** — a daily WP-Cron event (`kwv_events_expire_events`) moves any published event past its date to **Draft**. An event stays live *on* its date and drops out of the booking dropdowns once drafted.
+- **Booking dropdowns** — `modules/events-booking-form.php` replaces the placeholder choices in each venue's "Book Experience" Gravity Form (the *Event you wish to book for* field) with the published events for that venue's Brand, soonest first. Forms are matched to Brands via the `kwv_forms_installer_ids` option (see the `kwv-forms` plugin); the `kwv_events_venue_brand_map` / `kwv_events_form_brand_slug` filters override the mapping. Inert without Gravity Forms.
+
 ## Requirements
 
 - WordPress 6.7+, PHP 7.4+

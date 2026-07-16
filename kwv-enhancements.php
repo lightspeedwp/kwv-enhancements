@@ -2,7 +2,7 @@
 /**
  * Plugin Name: KWV Enhancements
  * Plugin URI: https://kwv.co.za
- * Description: Site-specific enhancements and content fixes for the KWV 2026 site — functionality that must survive a theme switch. Ships as modules; the first is Careers (the kwv_career job post type and its Gravity Forms application form).
+ * Description: Site-specific enhancements and content fixes for the KWV 2026 site — functionality that must survive a theme switch. Ships as modules: Careers (the kwv_career job post type and its Gravity Forms application form) and Events (the kwv_event post type, its Brand taxonomy, and the dynamic booking-form dropdowns).
  * Version: 1.0.0
  * Author: LightSpeed
  * Author URI: https://lightspeedwp.agency
@@ -59,23 +59,31 @@ add_filter( 'acf/settings/save_json', 'kwv_enh_acf_json_save_point' );
 require_once KWV_ENH_DIR . 'modules/block-bindings.php';
 require_once KWV_ENH_DIR . 'modules/careers.php';
 require_once KWV_ENH_DIR . 'modules/careers-application-form.php';
+require_once KWV_ENH_DIR . 'modules/events.php';
+require_once KWV_ENH_DIR . 'modules/events-booking-form.php';
 
 /**
- * Activation: register post types then flush rewrite rules so /careers/{slug}
- * resolves immediately, and schedule the daily job-expiry check.
+ * Activation: register post types and the Brand taxonomy, flush rewrite rules
+ * so /careers/{slug} and /events/{slug} resolve immediately, seed the default
+ * Brand terms, and schedule the daily expiry checks.
  */
 function kwv_enh_activate() {
 	kwv_careers_register_post_type();
+	kwv_events_register_taxonomy();
+	kwv_events_register_post_type();
 	flush_rewrite_rules();
+	kwv_events_maybe_seed_brands();
 	kwv_careers_schedule_expiry_event();
+	kwv_events_schedule_expiry_event();
 }
 register_activation_hook( __FILE__, 'kwv_enh_activate' );
 
 /**
- * Deactivation: clear the expiry cron and flush rewrite rules.
+ * Deactivation: clear the expiry crons and flush rewrite rules.
  */
 function kwv_enh_deactivate() {
 	kwv_careers_unschedule_expiry_event();
+	kwv_events_unschedule_expiry_event();
 	flush_rewrite_rules();
 }
 register_deactivation_hook( __FILE__, 'kwv_enh_deactivate' );

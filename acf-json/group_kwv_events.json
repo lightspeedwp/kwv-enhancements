@@ -1,0 +1,62 @@
+{
+	"key": "group_kwv_events",
+	"title": "Event Details",
+	"fields": [
+		{
+			"key": "field_kwv_event_date",
+			"label": "Date",
+			"name": "kwv_event_date",
+			"aria-label": "",
+			"type": "date_picker",
+			"instructions": "The date the event takes place. After this date the event automatically moves to Draft and drops out of the booking dropdowns. It stays live on the day itself.",
+			"required": 1,
+			"conditional_logic": 0,
+			"wrapper": {
+				"width": "50",
+				"class": "",
+				"id": ""
+			},
+			"display_format": "d/m/Y",
+			"return_format": "d/m/Y",
+			"first_day": 1
+		},
+		{
+			"key": "field_kwv_event_time",
+			"label": "Time",
+			"name": "kwv_event_time",
+			"aria-label": "",
+			"type": "time_picker",
+			"instructions": "The event's start time, e.g. 18:00.",
+			"required": 0,
+			"conditional_logic": 0,
+			"wrapper": {
+				"width": "50",
+				"class": "",
+				"id": ""
+			},
+			"display_format": "H:i",
+			"return_format": "H:i"
+		}
+	],
+	"location": [
+		[
+			{
+				"param": "post_type",
+				"operator": "==",
+				"value": "kwv_event"
+			}
+		]
+	],
+	"menu_order": 0,
+	"position": "normal",
+	"style": "default",
+	"label_placement": "top",
+	"instruction_placement": "label",
+	"hide_on_screen": [
+		"custom_fields"
+	],
+	"active": true,
+	"description": "Custom fields for the Events (kwv_event) post type. The Brand (venue) link is a taxonomy, and the featured image is the native WordPress Featured Image. Managed as code in the KWV Enhancements plugin's /acf-json directory.",
+	"show_in_rest": 1,
+	"modified": 1752710400
+}
