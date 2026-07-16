@@ -4,6 +4,17 @@ Site-specific enhancements and content fixes for the [KWV 2026](https://kwv.co.z
 
 This plugin is the home for functionality that must **survive a theme switch** — post types, custom fields, and the data behind them. Presentation stays in the `kwv-theme-2026` block theme; anything that owns data lives here. New fixes and features are added as self-contained **modules**.
 
+## Architecture
+
+A small object-oriented module system under the `KWV\Enhancements` namespace:
+
+- **`Module`** (`modules/module.php`) — every module implements this one-method interface (`register()`, where it wires its hooks). Modules that need setup/teardown also implement **`Activatable`** / **`Deactivatable`**.
+- **`PostTypeModule`** (`modules/post-type-module.php`) — an abstract base that holds the machinery shared by every content type: registering a REST-exposed CPT, registering its string meta fields, and running a daily Ymd-date auto-expiry cron. `Careers` and `Events` extend it and supply only what differs (labels, args, field list, and which meta key drives expiry).
+- **`Plugin`** (`modules/plugin.php`) — the container. It instantiates the modules, calls `register()` on each, and delegates activation/deactivation (flushing rewrite rules once at the end).
+- **`kwv-enhancements.php`** — a thin bootstrap: defines the `KWV_ENH_*` constants, `require`s the module files, and boots `Plugin::instance()`.
+
+The concrete modules are `AcfJson`, `BlockBindings`, `Careers`, `ApplicationForm`, `Events` and `BookingForm`.
+
 ## Modules
 
 ### Careers
@@ -22,7 +33,7 @@ The `kwv_career` job post type and its Gravity Forms application form.
   | Application Form | `kwv_career_form_id` | Gravity Forms form to embed. Blank = shared form. |
 
 - **Auto-expiry** — a daily WP-Cron event (`kwv_careers_expire_jobs`) moves any published job past its closing date to **Draft** (reversible, and it drops off the front-end listing which only queries published posts). A job stays live *on* its closing day.
-- **Application form** — `modules/careers-application-form.php` installs the shared "KWV Job Application" Gravity Form once and stores its id in the `kwv_careers_form_id` option. Per-job override via the Application Form field; resolution order is handled by `kwv_careers_get_form_id()`. The `[kwv_career_form]` shortcode renders whichever form a job resolves to.
+- **Application form** — `modules/careers-application-form.php` (the `ApplicationForm` module) installs the shared "KWV Job Application" Gravity Form once and stores its id in the `kwv_careers_form_id` option. Per-job override via the Application Form field; resolution order is handled by `Careers::get_form_id()`. The `[kwv_career_form]` shortcode renders whichever form a job resolves to.
 
 ### Events
 

@@ -10,12 +10,14 @@ It encodes the KWV split: **the plugin owns data** (post type, meta, field defin
 
 ```
 KWV Enhancements plugin (this repo)            kwv-theme-2026 (theme repo)
-├─ modules/<type>.php        CPT + meta         ├─ patterns/template-single-<type>.php
+├─ modules/<type>.php        CPT + meta class   ├─ patterns/template-single-<type>.php
 ├─ acf-json/group_<type>.json  SCF fields       ├─ templates/single-<cpt>.html
 ├─ modules/block-bindings.php  formatting       ├─ patterns/<type>-card.php   (listing item)
 └─ modules/<type>-*.php      extras (forms…)    └─ styles/sections/cards/<type>-card.json
                                                 └─ assets/styles/core-*.css   (:hover only)
 ```
+
+The plugin is a small OO module system (namespace `KWV\Enhancements`). Each concern is a class implementing the `Module` interface; a content type extends the **`PostTypeModule`** base (`modules/post-type-module.php`), which already owns CPT registration, the meta-field loop, and the daily auto-expiry cron. The `Plugin` container (`modules/plugin.php`) instantiates the modules and drives their lifecycle. See the README's Architecture section.
 
 Key rule: **an SCF field's `name` MUST equal the `register_post_meta` key**, so SCF writes to the same REST-exposed key the theme's block bindings read. That single decision is what makes fields work end-to-end.
 
@@ -23,11 +25,15 @@ Key rule: **an SCF field's `name` MUST equal the `register_post_meta` key**, so 
 
 ## 1. Plugin — register the post type + meta (`modules/<type>.php`)
 
-1. `register_post_type( '<cpt>', … )` on `init`. Keep `show_in_rest => true`, set the rewrite slug, decide `has_archive`. **The CPT lives in code here — not in SCF's post-type UI** — so it doesn't depend on SCF being active and is portable/reviewable.
-2. `register_post_meta( '<cpt>', '<key>', … )` for every field, with `show_in_rest => true`, a `sanitize_callback`, and an `auth_callback`. This is the contract that makes meta REST-visible and binding-friendly. **SCF supplies the editor UI; `register_post_meta` supplies the contract — keep both.**
-3. Add the module to the `require_once` list in `kwv-enhancements.php`. If it needs a cron (e.g. Careers' closing-date expiry), schedule it in `kwv_enh_activate()` and self-heal on `init`.
+Add a class that **extends `PostTypeModule`**. The base already registers the CPT and meta on `init`, self-heals the expiry schedule, and runs the daily expiry cron — you implement only the abstract hooks:
 
-Careers reference: [`modules/careers.php`](../modules/careers.php).
+1. `post_type()` / `post_type_args()` — the slug and the `register_post_type()` args. Keep `show_in_rest => true`, set the rewrite slug, decide `has_archive`. **The CPT lives in code here — not in SCF's post-type UI** — so it doesn't depend on SCF being active and is portable/reviewable.
+2. `meta_fields()` — return a `meta key => description` map. The base registers each as single, REST-exposed, sanitised string meta with an `edit_posts` `auth_callback`. This is the contract that makes meta REST-visible and binding-friendly. **SCF supplies the editor UI; `register_post_meta` supplies the contract — keep both.**
+3. `expiry_hook()` / `expiry_meta_key()` — the cron hook name and the `Ymd` date meta key that drives auto-expiry (declare the hook name as a class const). The base handles scheduling, self-healing on `init`, and drafting past-dated items.
+4. Anything type-specific (a taxonomy, a shortcode, an enqueue) goes in an overridden `register()` that calls `parent::register()` first — see how `Events` adds its Brand taxonomy and `Careers` adds the form shortcode. If a module needs extra activation work, override `activate()` (call the parent or re-run the pieces in order).
+5. `require` the file in `kwv-enhancements.php` and add the class to the module list in `Plugin::__construct()`. Activation/deactivation are automatic for any module implementing `Activatable`/`Deactivatable` (which `PostTypeModule` does).
+
+Careers reference: [`modules/careers.php`](../modules/careers.php); base class [`modules/post-type-module.php`](../modules/post-type-module.php).
 
 ## 2. Plugin — author fields in SCF, stored as code (`acf-json/group_<type>.json`)
 
@@ -55,9 +61,9 @@ Some values need light server-side logic the core `core/post-meta` binding can't
   ```
 - **Dynamic embeds** (e.g. a per-item Gravity Form) → a shortcode that resolves per render. Careers uses `[kwv_career_form]`, resolving the per-job form id (falling back to a shared form). Resolve the post as `id att → get_the_ID() → get_queried_object_id()` so it works inside block templates.
 
-Careers reference: [`modules/block-bindings.php`](../modules/block-bindings.php), `kwv_careers_render_form()` in [`modules/careers.php`](../modules/careers.php).
+Careers reference: the `BlockBindings` module in [`modules/block-bindings.php`](../modules/block-bindings.php), `Careers::render_form()` in [`modules/careers.php`](../modules/careers.php).
 
-**Styling a plugin-rendered component.** Presentation normally lives in the theme — but when the plugin *renders* a component (a shortcode/form) and it needs CSS a block-style JSON can't express (third-party form markup, `:hover`, `::file-selector-button`), style it **from the plugin** with a scoped stylesheet enqueued on the relevant view. This is both correct (the plugin owns what it renders) and practical (the plugin deploys to every environment; a theme may not be writable on a given host). Scope to a stable hook like the `.single-<cpt>` body class, use the theme's `--wp--*` custom properties to stay token-driven, and `!important` where you must beat a third-party plugin's own stylesheet. Careers reference: [`assets/careers-form.css`](../assets/careers-form.css) + `kwv_careers_enqueue_form_style()`.
+**Styling a plugin-rendered component.** Presentation normally lives in the theme — but when the plugin *renders* a component (a shortcode/form) and it needs CSS a block-style JSON can't express (third-party form markup, `:hover`, `::file-selector-button`), style it **from the plugin** with a scoped stylesheet enqueued on the relevant view. This is both correct (the plugin owns what it renders) and practical (the plugin deploys to every environment; a theme may not be writable on a given host). Scope to a stable hook like the `.single-<cpt>` body class, use the theme's `--wp--*` custom properties to stay token-driven, and `!important` where you must beat a third-party plugin's own stylesheet. Careers reference: [`assets/careers-form.css`](../assets/careers-form.css) + `Careers::enqueue_form_style()`.
 
 ## 4. Theme — the single template
 

@@ -19,7 +19,17 @@
  * Custom fields are authored with Secure Custom Fields and stored as code in
  * /acf-json (local JSON), so field definitions are version-controlled and
  * deploy with the plugin rather than living only in a database.
+ *
+ * Architecture: a small OO module system. Each concern is a class implementing
+ * the Module interface (modules/module.php); Careers and Events share a
+ * PostTypeModule base for their CPT/meta/expiry machinery. The Plugin container
+ * (modules/plugin.php) instantiates the modules, registers their hooks, and
+ * delegates activation/deactivation. This bootstrap file only wires that up.
+ *
+ * @package KWV_Enhancements
  */
+
+namespace KWV\Enhancements;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -30,60 +40,20 @@ define( 'KWV_ENH_FILE', __FILE__ );
 define( 'KWV_ENH_DIR', plugin_dir_path( __FILE__ ) );
 define( 'KWV_ENH_URL', plugin_dir_url( __FILE__ ) );
 
-/**
- * Tell Secure Custom Fields / ACF to load (and save) field groups from this
- * plugin's /acf-json directory, so the Careers field group ships as code.
- *
- * @param string[] $paths Existing JSON load paths.
- * @return string[] Paths with this plugin's acf-json directory appended.
- */
-function kwv_enh_acf_json_load_point( $paths ) {
-	$paths[] = KWV_ENH_DIR . 'acf-json';
-	return $paths;
-}
-add_filter( 'acf/settings/load_json', 'kwv_enh_acf_json_load_point' );
-
-/**
- * Save SCF/ACF field-group JSON into this plugin (used when editing groups in
- * the admin UI on a dev environment), keeping /acf-json authoritative.
- *
- * @param string $path Default save path.
- * @return string This plugin's acf-json directory.
- */
-function kwv_enh_acf_json_save_point( $path ) {
-	return KWV_ENH_DIR . 'acf-json';
-}
-add_filter( 'acf/settings/save_json', 'kwv_enh_acf_json_save_point' );
-
-// Load modules.
+// Load the module framework, then the modules (contracts and base before
+// concretes; the container last).
+require_once KWV_ENH_DIR . 'modules/module.php';
+require_once KWV_ENH_DIR . 'modules/post-type-module.php';
+require_once KWV_ENH_DIR . 'modules/acf-json.php';
 require_once KWV_ENH_DIR . 'modules/block-bindings.php';
 require_once KWV_ENH_DIR . 'modules/careers.php';
 require_once KWV_ENH_DIR . 'modules/careers-application-form.php';
 require_once KWV_ENH_DIR . 'modules/events.php';
 require_once KWV_ENH_DIR . 'modules/events-booking-form.php';
+require_once KWV_ENH_DIR . 'modules/plugin.php';
 
-/**
- * Activation: register post types and the Brand taxonomy, flush rewrite rules
- * so /careers/{slug} and /events/{slug} resolve immediately, seed the default
- * Brand terms, and schedule the daily expiry checks.
- */
-function kwv_enh_activate() {
-	kwv_careers_register_post_type();
-	kwv_events_register_taxonomy();
-	kwv_events_register_post_type();
-	flush_rewrite_rules();
-	kwv_events_maybe_seed_brands();
-	kwv_careers_schedule_expiry_event();
-	kwv_events_schedule_expiry_event();
-}
-register_activation_hook( __FILE__, 'kwv_enh_activate' );
+$kwv_enhancements = Plugin::instance();
+$kwv_enhancements->register();
 
-/**
- * Deactivation: clear the expiry crons and flush rewrite rules.
- */
-function kwv_enh_deactivate() {
-	kwv_careers_unschedule_expiry_event();
-	kwv_events_unschedule_expiry_event();
-	flush_rewrite_rules();
-}
-register_deactivation_hook( __FILE__, 'kwv_enh_deactivate' );
+register_activation_hook( __FILE__, array( $kwv_enhancements, 'activate' ) );
+register_deactivation_hook( __FILE__, array( $kwv_enhancements, 'deactivate' ) );

@@ -9,12 +9,14 @@
  * @package KWV_Enhancements
  */
 
+namespace KWV\Enhancements;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * Register the KWV block-binding sources.
+ * Registers the KWV block-binding sources.
  *
  * `kwv/meta-date` — reads a date meta value stored as Ymd (the format SCF's
  * date picker saves) and returns it formatted with the site's date format,
@@ -23,57 +25,69 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  *   "bindings":{"content":{"source":"kwv/meta-date","args":{"key":"kwv_career_closing_date"}}}
  */
-function kwv_enh_register_block_bindings() {
+class BlockBindings implements Module {
 
-	if ( ! function_exists( 'register_block_bindings_source' ) ) {
-		return; // WordPress < 6.5.
+	/**
+	 * Register the binding source on init.
+	 */
+	public function register(): void {
+		add_action( 'init', array( $this, 'register_sources' ) );
 	}
 
-	register_block_bindings_source(
-		'kwv/meta-date',
-		array(
-			'label'              => __( 'KWV Meta Date', 'kwv-enhancements' ),
-			'get_value_callback' => 'kwv_enh_meta_date_binding',
-			'uses_context'       => array( 'postId' ),
-		)
-	);
-}
-add_action( 'init', 'kwv_enh_register_block_bindings' );
+	/**
+	 * Register the KWV block-binding sources.
+	 */
+	public function register_sources(): void {
 
-/**
- * Resolve a formatted date from a post-meta value stored as Ymd.
- *
- * @param array    $args            Binding args; expects 'key' (meta key) and optionally 'format' (PHP date format).
- * @param WP_Block $block_instance  The block being rendered (for post context).
- * @return string The formatted date, the raw value if it can't be parsed, or '' when empty.
- */
-function kwv_enh_meta_date_binding( $args, $block_instance ) {
+		if ( ! function_exists( 'register_block_bindings_source' ) ) {
+			return; // WordPress < 6.5.
+		}
 
-	$key = isset( $args['key'] ) ? (string) $args['key'] : '';
-
-	if ( '' === $key ) {
-		return '';
+		register_block_bindings_source(
+			'kwv/meta-date',
+			array(
+				'label'              => __( 'KWV Meta Date', 'kwv-enhancements' ),
+				'get_value_callback' => array( $this, 'get_meta_date' ),
+				'uses_context'       => array( 'postId' ),
+			)
+		);
 	}
 
-	$post_id = $block_instance->context['postId'] ?? get_the_ID();
+	/**
+	 * Resolve a formatted date from a post-meta value stored as Ymd.
+	 *
+	 * @param array    $args           Binding args; expects 'key' (meta key) and optionally 'format' (PHP date format).
+	 * @param \WP_Block $block_instance The block being rendered (for post context).
+	 * @return string The formatted date, the raw value if it can't be parsed, or '' when empty.
+	 */
+	public function get_meta_date( $args, $block_instance ) {
 
-	if ( ! $post_id ) {
-		return '';
+		$key = isset( $args['key'] ) ? (string) $args['key'] : '';
+
+		if ( '' === $key ) {
+			return '';
+		}
+
+		$post_id = $block_instance->context['postId'] ?? get_the_ID();
+
+		if ( ! $post_id ) {
+			return '';
+		}
+
+		$raw = (string) get_post_meta( (int) $post_id, $key, true );
+
+		if ( '' === $raw ) {
+			return '';
+		}
+
+		$date = \DateTime::createFromFormat( 'Ymd', $raw );
+
+		if ( ! $date ) {
+			return $raw; // Unexpected format — show what's stored rather than nothing.
+		}
+
+		$format = ! empty( $args['format'] ) ? (string) $args['format'] : (string) get_option( 'date_format', 'j F Y' );
+
+		return wp_date( $format, $date->getTimestamp() );
 	}
-
-	$raw = (string) get_post_meta( (int) $post_id, $key, true );
-
-	if ( '' === $raw ) {
-		return '';
-	}
-
-	$date = DateTime::createFromFormat( 'Ymd', $raw );
-
-	if ( ! $date ) {
-		return $raw; // Unexpected format — show what's stored rather than nothing.
-	}
-
-	$format = ! empty( $args['format'] ) ? (string) $args['format'] : (string) get_option( 'date_format', 'j F Y' );
-
-	return wp_date( $format, $date->getTimestamp() );
 }

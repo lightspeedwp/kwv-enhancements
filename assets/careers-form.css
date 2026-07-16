@@ -94,18 +94,34 @@
 	color: var(--wp--preset--color--neutral-600);
 }
 
+/* The footer is a flex row that Gravity Forms stuffs with its AJAX `<br>` tags +
+   hidden inputs (each becomes a flex item, since GF's reset un-hides them), making
+   the footer ~138px tall — and because flex items stretch by default, the submit
+   button was dragged to that full height (no button height rule can beat a flex
+   stretch). Neutralise the footer: block layout + hide the AJAX noise so it
+   collapses to the button. Verified in the live DOM (138px → 48px). */
+.single-kwv_career .gform_wrapper .gform_footer,
+.single-kwv_career .gform_wrapper .gform-footer {
+	display: block !important;
+}
+
+.single-kwv_career .gform_wrapper .gform_footer br,
+.single-kwv_career .gform_wrapper .gform_footer input[type="hidden"],
+.single-kwv_career .gform_wrapper .gform-footer br,
+.single-kwv_career .gform_wrapper .gform-footer input[type="hidden"] {
+	display: none !important;
+}
+
 /* Submit — the black CTA button (mirrors the core/button "cta" variation: contrast
-   fill + base text, flipping to a base fill + contrast text on hover/focus). height:auto
-   + natural padding replaces Orbital's tall default. */
+   fill + base text, flipping to a base fill + contrast text on hover/focus).
+   fit-content keeps it content-width in the now-block footer; min-height gives a
+   clean ~48px matching the fields. */
 .single-kwv_career .gform_wrapper .gform_footer .gform_button,
 .single-kwv_career .gform_wrapper .gform-footer .gform_button {
 	display: inline-flex !important;
 	align-items: center !important;
 	justify-content: center !important;
-	width: auto !important;
-	/* Zero vertical padding + line-height:1 + a fixed min-height gives a clean
-	   ~48px button (matching the fields) and overrides Orbital's own min-height
-	   and the tall clamp() vertical padding the site buttons use elsewhere. */
+	width: fit-content !important;
 	height: auto !important;
 	min-height: 3rem !important;
 	line-height: 1 !important;
