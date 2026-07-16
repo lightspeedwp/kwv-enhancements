@@ -57,6 +57,8 @@ Some values need light server-side logic the core `core/post-meta` binding can't
 
 Careers reference: [`modules/block-bindings.php`](../modules/block-bindings.php), `kwv_careers_render_form()` in [`modules/careers.php`](../modules/careers.php).
 
+**Styling a plugin-rendered component.** Presentation normally lives in the theme — but when the plugin *renders* a component (a shortcode/form) and it needs CSS a block-style JSON can't express (third-party form markup, `:hover`, `::file-selector-button`), style it **from the plugin** with a scoped stylesheet enqueued on the relevant view. This is both correct (the plugin owns what it renders) and practical (the plugin deploys to every environment; a theme may not be writable on a given host). Scope to a stable hook like the `.single-<cpt>` body class, use the theme's `--wp--*` custom properties to stay token-driven, and `!important` where you must beat a third-party plugin's own stylesheet. Careers reference: [`assets/careers-form.css`](../assets/careers-form.css) + `kwv_careers_enqueue_form_style()`.
+
 ## 4. Theme — the single template
 
 1. **Pattern** `patterns/template-single-<type>.php` holds the body; **`templates/single-<cpt>.html`** is a one-liner that references it: `<!-- wp:pattern {"slug":"kwv/template-single-<type>"} /-->`.
