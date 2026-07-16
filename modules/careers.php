@@ -192,11 +192,14 @@ function kwv_careers_enqueue_form_style() {
 		return;
 	}
 
+	$css_path = KWV_ENH_DIR . 'assets/careers-form.css';
+	$version  = file_exists( $css_path ) ? (string) filemtime( $css_path ) : KWV_ENH_VERSION;
+
 	wp_enqueue_style(
 		'kwv-careers-form',
 		KWV_ENH_URL . 'assets/careers-form.css',
 		array(),
-		KWV_ENH_VERSION
+		$version
 	);
 }
 add_action( 'wp_enqueue_scripts', 'kwv_careers_enqueue_form_style' );

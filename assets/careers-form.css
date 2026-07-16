@@ -103,12 +103,17 @@
 	align-items: center !important;
 	justify-content: center !important;
 	width: auto !important;
+	/* Zero vertical padding + line-height:1 + a fixed min-height gives a clean
+	   ~48px button (matching the fields) and overrides Orbital's own min-height
+	   and the tall clamp() vertical padding the site buttons use elsewhere. */
 	height: auto !important;
+	min-height: 3rem !important;
+	line-height: 1 !important;
 	background-color: var(--wp--preset--color--contrast) !important;
 	color: var(--wp--preset--color--base) !important;
 	border: 1px solid var(--wp--preset--color--contrast) !important;
 	border-radius: 0 !important;
-	padding: var(--wp--custom--spacing--button--padding-vertical) var(--wp--custom--spacing--button--padding-horizontal) !important;
+	padding: 0 var(--wp--custom--spacing--button--padding-horizontal) !important;
 	font-family: var(--wp--preset--font-family--heading) !important;
 	font-size: var(--wp--preset--font-size--200) !important;
 	font-weight: var(--wp--custom--font-weight--semi-bold) !important;
