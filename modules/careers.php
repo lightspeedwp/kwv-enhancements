@@ -179,6 +179,29 @@ function kwv_careers_render_form( $atts = array() ) {
 add_shortcode( 'kwv_career_form', 'kwv_careers_render_form' );
 
 /**
+ * Style the job application form on single job pages.
+ *
+ * The form is embedded with the [kwv_career_form] shortcode (not the Gravity Forms
+ * block), so it can't ride a block stylesheet. This sheet is scoped to the
+ * `.single-kwv_career` body class and lives in the plugin because the plugin renders
+ * the form and is deployable to every environment (the theme is not always writable).
+ */
+function kwv_careers_enqueue_form_style() {
+
+	if ( ! is_singular( 'kwv_career' ) ) {
+		return;
+	}
+
+	wp_enqueue_style(
+		'kwv-careers-form',
+		KWV_ENH_URL . 'assets/careers-form.css',
+		array(),
+		KWV_ENH_VERSION
+	);
+}
+add_action( 'wp_enqueue_scripts', 'kwv_careers_enqueue_form_style' );
+
+/**
  * Schedule the daily job-expiry check.
  */
 function kwv_careers_schedule_expiry_event() {

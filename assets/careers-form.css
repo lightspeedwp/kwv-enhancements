@@ -1,0 +1,128 @@
+/**
+ * KWV Careers — job application form styling.
+ *
+ * Enqueued by the plugin on single kwv_career pages (the form is embedded with the
+ * [kwv_career_form] shortcode, so it can't ride a block stylesheet). Scoped to the
+ * `.single-kwv_career` body class WordPress adds on those pages, so it's independent
+ * of the form id (which differs per environment) and of theme-file vs DB-template
+ * rendering. It uses the theme's global CSS custom properties (theme.json emits them
+ * to :root), so it stays token-driven and in step with the palette.
+ *
+ * `!important` + an explicit `height:auto` are used deliberately: Gravity Forms ships
+ * several stylesheets (Orbital theme + foundation) that size and colour their own
+ * controls, and Orbital's fixed control heights clip the value text once real padding
+ * is applied. These scoped overrides guarantee the KWV look lands over all of them.
+ *
+ * This lives in the plugin (not the theme) because the plugin renders the form and is
+ * the only code path deployable to every environment; the theme keeps the newsletter
+ * form styling, which rides its Gravity Forms block.
+ */
+
+/* Uniform field appearance — text/email/tel/number/url/select/textarea AND file
+   inputs share one square, 1px neutral border on a base fill. height:auto stops the
+   Orbital fixed-height controls from clipping the value once padding is applied. */
+.single-kwv_career .gform_wrapper .gfield input[type="text"],
+.single-kwv_career .gform_wrapper .gfield input[type="email"],
+.single-kwv_career .gform_wrapper .gfield input[type="tel"],
+.single-kwv_career .gform_wrapper .gfield input[type="number"],
+.single-kwv_career .gform_wrapper .gfield input[type="url"],
+.single-kwv_career .gform_wrapper .gfield select,
+.single-kwv_career .gform_wrapper .gfield textarea,
+.single-kwv_career .gform_wrapper .gfield input[type="file"] {
+	box-sizing: border-box !important;
+	width: 100% !important;
+	height: auto !important;
+	background-color: var(--wp--preset--color--base) !important;
+	color: var(--wp--preset--color--contrast) !important;
+	border: 1px solid var(--wp--preset--color--neutral-300) !important;
+	border-radius: 0 !important;
+	padding: 0.75rem var(--wp--preset--spacing--20) !important;
+	font-size: var(--wp--preset--font-size--200) !important;
+	line-height: var(--wp--custom--line-height--body) !important;
+	transition: border-color 0.2s ease-in-out;
+}
+
+.single-kwv_career .gform_wrapper .gfield select {
+	min-height: 3rem !important; /* room for the value + native arrow */
+}
+
+.single-kwv_career .gform_wrapper .gfield input:focus,
+.single-kwv_career .gform_wrapper .gfield select:focus,
+.single-kwv_career .gform_wrapper .gfield textarea:focus {
+	border-color: var(--wp--preset--color--brand-500) !important;
+	outline: none !important;
+}
+
+.single-kwv_career .gform_wrapper .gfield input::placeholder,
+.single-kwv_career .gform_wrapper .gfield textarea::placeholder {
+	color: var(--wp--preset--color--neutral-600) !important;
+	opacity: 1 !important;
+}
+
+/* File uploads — the native input showed the unstyled OS control, clipped by the
+   Orbital control height. Give it the same field frame, let it grow (height:auto,
+   above), and dress the picker as a compact contrast button. */
+.single-kwv_career .gform_wrapper .gfield input[type="file"] {
+	padding: var(--wp--preset--spacing--10) !important;
+	cursor: pointer;
+}
+
+.single-kwv_career .gform_wrapper .gfield input[type="file"]::file-selector-button {
+	margin-right: var(--wp--preset--spacing--20);
+	padding: 0.5rem var(--wp--preset--spacing--20);
+	background-color: var(--wp--preset--color--contrast);
+	color: var(--wp--preset--color--base);
+	border: 0;
+	border-radius: 0;
+	font-family: var(--wp--preset--font-family--heading);
+	font-size: var(--wp--preset--font-size--200);
+	font-weight: var(--wp--custom--font-weight--semi-bold);
+	text-transform: uppercase;
+	letter-spacing: 0.02em;
+	cursor: pointer;
+	transition: background-color 0.2s ease-in-out;
+}
+
+.single-kwv_career .gform_wrapper .gfield input[type="file"]::file-selector-button:hover {
+	background-color: var(--wp--preset--color--neutral-700);
+}
+
+.single-kwv_career .gform_wrapper .gfield .gform_fileupload_rules {
+	display: block;
+	margin-top: var(--wp--preset--spacing--10);
+	font-size: var(--wp--preset--font-size--100);
+	color: var(--wp--preset--color--neutral-600);
+}
+
+/* Submit — the black CTA button (mirrors the core/button "cta" variation: contrast
+   fill + base text, flipping to a base fill + contrast text on hover/focus). height:auto
+   + natural padding replaces Orbital's tall default. */
+.single-kwv_career .gform_wrapper .gform_footer .gform_button,
+.single-kwv_career .gform_wrapper .gform-footer .gform_button {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	width: auto !important;
+	height: auto !important;
+	background-color: var(--wp--preset--color--contrast) !important;
+	color: var(--wp--preset--color--base) !important;
+	border: 1px solid var(--wp--preset--color--contrast) !important;
+	border-radius: 0 !important;
+	padding: var(--wp--custom--spacing--button--padding-vertical) var(--wp--custom--spacing--button--padding-horizontal) !important;
+	font-family: var(--wp--preset--font-family--heading) !important;
+	font-size: var(--wp--preset--font-size--200) !important;
+	font-weight: var(--wp--custom--font-weight--semi-bold) !important;
+	text-transform: uppercase !important;
+	letter-spacing: 0.02em !important;
+	cursor: pointer !important;
+	transition: background-color 0.25s ease-in-out, color 0.25s ease-in-out;
+}
+
+.single-kwv_career .gform_wrapper .gform_footer .gform_button:hover,
+.single-kwv_career .gform_wrapper .gform_footer .gform_button:focus-visible,
+.single-kwv_career .gform_wrapper .gform-footer .gform_button:hover,
+.single-kwv_career .gform_wrapper .gform-footer .gform_button:focus-visible {
+	background-color: var(--wp--preset--color--base) !important;
+	color: var(--wp--preset--color--contrast) !important;
+	border-color: var(--wp--preset--color--contrast) !important;
+}
