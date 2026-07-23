@@ -51,6 +51,15 @@ class BlockBindings implements Module {
 				'uses_context'       => array( 'postId' ),
 			)
 		);
+
+		register_block_bindings_source(
+			'kwv/meta-text',
+			array(
+				'label'              => __( 'KWV Meta Text', 'kwv-enhancements' ),
+				'get_value_callback' => array( $this, 'get_meta_text' ),
+				'uses_context'       => array( 'postId' ),
+			)
+		);
 	}
 
 	/**
@@ -89,5 +98,35 @@ class BlockBindings implements Module {
 		$format = ! empty( $args['format'] ) ? (string) $args['format'] : (string) get_option( 'date_format', 'j F Y' );
 
 		return wp_date( $format, $date->getTimestamp() );
+	}
+
+	/**
+	 * Return a plain post-meta value verbatim (no formatting).
+	 *
+	 * The counterpart to `kwv/meta-date` for text meta the `core/post-meta`
+	 * source can't reach on the front end (SCF/ACF fields aren't registered for
+	 * it). Bind a paragraph's `content` to it and pass the meta key as `key`:
+	 *
+	 *   "bindings":{"content":{"source":"kwv/meta-text","args":{"key":"kwv_edition"}}}
+	 *
+	 * @param array     $args           Binding args; expects 'key' (meta key).
+	 * @param \WP_Block $block_instance The block being rendered (for post context).
+	 * @return string The stored meta value, or '' when empty/unavailable.
+	 */
+	public function get_meta_text( $args, $block_instance ) {
+
+		$key = isset( $args['key'] ) ? (string) $args['key'] : '';
+
+		if ( '' === $key ) {
+			return '';
+		}
+
+		$post_id = $block_instance->context['postId'] ?? get_the_ID();
+
+		if ( ! $post_id ) {
+			return '';
+		}
+
+		return (string) get_post_meta( (int) $post_id, $key, true );
 	}
 }

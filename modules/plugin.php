@@ -58,6 +58,7 @@ final class Plugin {
 			new ApplicationForm(),
 			new Events(),
 			new BookingForm(),
+			new WinemakersClub(),
 		);
 	}
 

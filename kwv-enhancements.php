@@ -50,6 +50,7 @@ require_once KWV_ENH_DIR . 'modules/careers.php';
 require_once KWV_ENH_DIR . 'modules/careers-application-form.php';
 require_once KWV_ENH_DIR . 'modules/events.php';
 require_once KWV_ENH_DIR . 'modules/events-booking-form.php';
+require_once KWV_ENH_DIR . 'modules/winemakers-club.php';
 require_once KWV_ENH_DIR . 'modules/plugin.php';
 
 $kwv_enhancements = Plugin::instance();
