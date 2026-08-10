@@ -51,6 +51,18 @@ The `kwv_event` post type for the Visit Us venues, its **Brand** taxonomy, and t
 - **Auto-expiry** — a daily WP-Cron event (`kwv_events_expire_events`) moves any published event past its date to **Draft**. An event stays live *on* its date and drops out of the booking dropdowns once drafted.
 - **Booking dropdowns** — `modules/events-booking-form.php` replaces the placeholder choices in each venue's "Book Experience" Gravity Form (the *Event you wish to book for* field) with the published events for that venue's Brand, soonest first. Forms are matched to Brands via the `kwv_forms_installer_ids` option (see the `kwv-forms` plugin); the `kwv_events_venue_brand_map` / `kwv_events_form_brand_slug` filters override the mapping. Inert without Gravity Forms.
 
+### Payflex configuration cache
+
+A performance workaround for a bug in **Payflex Payment Gateway 2.7.1**, in `modules/payflex-configuration-cache.php`.
+
+`WC_Gateway_Payflex::get_payflex_limits()` (`includes/class-wc-gateway-payflex.php:964-970`) reads `$settings` on the line *before* it is assigned, so its `isset( $settings['payflex_limit_last_updated'] )` guard is always false and the intended 24-hour throttle never applies. `update_payment_limits()` therefore makes a blocking remote GET to the Payflex `/configuration` endpoint every time it is called — and it is called from `check_cart_within_limits()`, hooked to `woocommerce_available_payment_gateways`, which WooCommerce fires several times per page render.
+
+Measured on staging, 2026-08-10: eight blocking Payflex calls per render at ~0.81s each, for a **7.9s** origin TTFB on `/product-category/wine/`. Caching this one response brought it to **~1.1s**.
+
+The module caches only the successful `/configuration` GET, for 12 hours, via `pre_http_request` / `http_response`. Failures are never cached, so the gateway stays free to retry. The auth token is deliberately left alone — the gateway already caches it in the `payflex_access_token` transient with the expiry the API returns.
+
+**Remove this module once Payflex ship a fix**, and confirm limits still refresh.
+
 ## Requirements
 
 - WordPress 6.7+, PHP 7.4+
