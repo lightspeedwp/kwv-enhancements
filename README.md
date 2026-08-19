@@ -49,7 +49,12 @@ The `kwv_event` post type for the Visit Us venues, its **Brand** taxonomy, and t
   | Time | `kwv_event_time` | Time picker, e.g. `18:00`. |
 
 - **Auto-expiry** — a daily WP-Cron event (`kwv_events_expire_events`) moves any published event past its date to **Draft**. An event stays live *on* its date and drops out of the booking dropdowns once drafted.
-- **Booking dropdowns** — `modules/events-booking-form.php` replaces the placeholder choices in each venue's "Book Experience" Gravity Form (the *Event you wish to book for* field) with the published events for that venue's Brand, soonest first. Forms are matched to Brands via the `kwv_forms_installer_ids` option (see the `kwv-forms` plugin); the `kwv_events_venue_brand_map` / `kwv_events_form_brand_slug` filters override the mapping. Inert without Gravity Forms.
+- **Booking dropdowns** — `modules/events-booking-form.php` replaces the placeholder choices in each venue's "Book Experience" Gravity Form (the *Event you wish to book for* field) with the published events for that venue's Brand, soonest first. Forms are matched to Brands via the `kwv_forms_installer_ids` option (written by the retired `kwv-forms` installer plugin; the forms themselves are now database-owned and edited in the Gravity Forms admin); the `kwv_events_venue_brand_map` / `kwv_events_form_brand_slug` filters override the mapping. Inert without Gravity Forms.
+- **Booking visibility rules** — two rules follow from that dynamic list, so they are computed per request rather than stored in the form:
+  - **No events for the venue → no dropdown.** An empty select is a dead end, so the field is marked `administrative`, which removes it from both the rendered form and validation.
+  - **An event chosen → no Date/Time.** Each event choice carries its own date and time, so the manual *Date* + *Time* pair is only for open-ended requests. The conditional-logic rule (*show while the event field is empty*) is seeded in the form definition so it is visible in the form editor, and re-applied on every render so an editor save cannot drift it; it is dropped when the dropdown is hidden, leaving Date/Time always visible. Gravity Forms skips validation for conditionally-hidden fields, so the pair stays *required* without blocking an event booking.
+
+  These run on `gform_pre_render` / `gform_pre_validation` / `gform_pre_submission_filter` only — `gform_admin_pre_render` gets the choices alone, so the editor never persists a per-request visibility state.
 
 ### Payflex configuration cache
 

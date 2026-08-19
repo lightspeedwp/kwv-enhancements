@@ -8,9 +8,21 @@
  * Brand, so the dropdown always reflects the current programme and empties out
  * as events expire (the daily cron drafts past events — see {@see Events}).
  *
- * The forms are created and owned by the separate kwv-forms plugin; this module
- * only reads them and swaps the one field's choices. It is inert when Gravity
- * Forms is not active.
+ * Two visibility rules follow from that dynamic list, and both live here rather
+ * than in the form definition because they depend on what is published now:
+ *
+ * - **No events for the venue → no dropdown.** An empty select with nothing but
+ *   its placeholder is a dead end, so the field is marked administrative, which
+ *   takes it out of both the rendered form and validation.
+ * - **An event chosen → no Date/Time.** Each event choice already carries its own
+ *   date and time, so the manual pair is only for open-ended requests. The rule
+ *   is seeded in the form definition too (so it is visible in the form editor),
+ *   and re-applied on every render so an editor save cannot drift it. When the
+ *   dropdown is hidden the rule is dropped, leaving Date/Time always visible.
+ *
+ * The forms themselves are database-owned (edited in the Gravity Forms admin);
+ * this module only reads them and adjusts the fields it manages. It is inert when
+ * Gravity Forms is not active.
  *
  * @package KWV_Enhancements
  */
@@ -41,6 +53,10 @@ class BookingForm implements Module {
 	 * admin, and (crucially) submission validation — Gravity Forms validates a
 	 * select against its choices, so the choices must be present when the form
 	 * is processed, not just when it renders.
+	 *
+	 * The admin filter gets the choices only ({@see populate()}); the visibility
+	 * rules are front-end concerns ({@see prepare()}) and baking them into the
+	 * editor would persist them the next time someone saves the form.
 	 */
 	public function register_hooks(): void {
 
@@ -48,10 +64,10 @@ class BookingForm implements Module {
 			return;
 		}
 
-		add_filter( 'gform_pre_render', array( $this, 'populate' ) );
+		add_filter( 'gform_pre_render', array( $this, 'prepare' ) );
 		add_filter( 'gform_admin_pre_render', array( $this, 'populate' ) );
-		add_filter( 'gform_pre_validation', array( $this, 'populate' ) );
-		add_filter( 'gform_pre_submission_filter', array( $this, 'populate' ) );
+		add_filter( 'gform_pre_validation', array( $this, 'prepare' ) );
+		add_filter( 'gform_pre_submission_filter', array( $this, 'prepare' ) );
 	}
 
 	/**
@@ -182,10 +198,36 @@ class BookingForm implements Module {
 	/**
 	 * Populate the "Event" dropdown of a booking form with its venue's events.
 	 *
+	 * Choices only — safe to run in the form editor.
+	 *
 	 * @param array $form The Gravity Forms form array.
 	 * @return array The form, with the event field's choices replaced when managed.
 	 */
 	public function populate( $form ) {
+		return $this->filter_form( $form, false );
+	}
+
+	/**
+	 * Populate the dropdown *and* apply the visibility rules that depend on it.
+	 *
+	 * Used for display, validation and submission — see the class docblock for the
+	 * two rules and why they are computed per request rather than stored.
+	 *
+	 * @param array $form The Gravity Forms form array.
+	 * @return array The prepared form.
+	 */
+	public function prepare( $form ) {
+		return $this->filter_form( $form, true );
+	}
+
+	/**
+	 * Shared worker behind {@see populate()} and {@see prepare()}.
+	 *
+	 * @param array $form               The Gravity Forms form array.
+	 * @param bool  $apply_visibility   Whether to apply the event-driven visibility rules.
+	 * @return array The filtered form.
+	 */
+	protected function filter_form( $form, bool $apply_visibility ) {
 
 		if ( empty( $form['id'] ) || empty( $form['fields'] ) ) {
 			return $form;
@@ -197,8 +239,9 @@ class BookingForm implements Module {
 			return $form;
 		}
 
-		$label   = $this->field_label();
-		$choices = $this->brand_choices( $brand_slug );
+		$label       = $this->field_label();
+		$choices     = $this->brand_choices( $brand_slug );
+		$event_field = null;
 
 		foreach ( $form['fields'] as $field ) {
 
@@ -206,12 +249,53 @@ class BookingForm implements Module {
 				continue;
 			}
 
+			$event_field        = $field;
 			$field->choices     = $choices;
 			$field->placeholder = $choices
 				? __( 'Select an event', 'kwv-enhancements' )
 				: __( 'No events currently scheduled', 'kwv-enhancements' );
 		}
 
+		if ( ! $apply_visibility || null === $event_field ) {
+			return $form;
+		}
+
+		// Nothing scheduled for this venue: take the dropdown out of the form
+		// entirely. 'administrative' skips both rendering and validation.
+		if ( ! $choices ) {
+			$event_field->visibility = 'administrative';
+		}
+
+		$logic = $choices ? $this->date_time_logic( $event_field->id ) : '';
+
+		foreach ( $form['fields'] as $field ) {
+
+			if ( in_array( $field->type, array( 'date', 'time' ), true ) ) {
+				$field->conditionalLogic = $logic;
+			}
+		}
+
 		return $form;
+	}
+
+	/**
+	 * Conditional logic for the Date/Time pair: show only while no event is chosen.
+	 *
+	 * @param int|string $event_field_id Id of the event dropdown.
+	 * @return array Gravity Forms conditional-logic array.
+	 */
+	public function date_time_logic( $event_field_id ): array {
+
+		return array(
+			'actionType' => 'show',
+			'logicType'  => 'all',
+			'rules'      => array(
+				array(
+					'fieldId'  => $event_field_id,
+					'operator' => 'is',
+					'value'    => '',
+				),
+			),
+		);
 	}
 }
