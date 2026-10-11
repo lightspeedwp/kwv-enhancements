@@ -1,0 +1,21 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "kwv/event-accommodation",
+	"version": "1.0.0",
+	"title": "Event Accommodation",
+	"category": "theme",
+	"icon": "building",
+	"description": "The \"Accommodation nearby\" cards for the current event, from its Accommodation nearby fields. Renders nothing when the event has none.",
+	"keywords": [ "accommodation", "stay", "airbnb", "booking", "lekkeslaap", "event" ],
+	"textdomain": "kwv-enhancements",
+	"usesContext": [ "postId", "postType" ],
+	"supports": {
+		"html": false,
+		"align": [ "wide", "full" ],
+		"spacing": {
+			"margin": true
+		}
+	},
+	"editorScript": "file:./index.js"
+}

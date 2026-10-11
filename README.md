@@ -47,6 +47,9 @@ The `kwv_event` post type for the Visit Us venues, its **Brand** taxonomy, and t
   |---|---|---|
   | Date | `kwv_event_date` | Date picker (stored `Ymd`). **Auto-expires** the event. |
   | Time | `kwv_event_time` | Time picker, e.g. `18:00`. |
+  | Accommodation nearby | `kwv_event_accommodation` | Repeater: *Link* (`url`), *Name* (`title`), optional *Image* (`image`, attachment ID). Stored as `kwv_event_accommodation_{n}_{sub_field}`. |
+
+- **Accommodation nearby** — `modules/event-accommodation.php` registers the dynamic `kwv/event-accommodation` block (`blocks/event-accommodation/`), which the theme places on the single-event template. It renders a heading and a grid of linked cards from the repeater, and nothing when an event has no entries. The platform label ("via Airbnb") comes from the link's host. Cards are core block markup styled by the theme's Event Card section style, so the plugin ships no CSS.
 
 - **Auto-expiry** — a daily WP-Cron event (`kwv_events_expire_events`) moves any published event past its date to **Draft**. An event stays live *on* its date and drops out of the booking dropdowns once drafted.
 - **Booking dropdowns** — `modules/events-booking-form.php` replaces the placeholder choices in each venue's "Book Experience" Gravity Form (the *Event you wish to book for* field) with the published events for that venue's Brand, soonest first. Forms are matched to Brands via the `kwv_forms_installer_ids` option (written by the retired `kwv-forms` installer plugin; the forms themselves are now database-owned and edited in the Gravity Forms admin); the `kwv_events_venue_brand_map` / `kwv_events_form_brand_slug` filters override the mapping. Inert without Gravity Forms.

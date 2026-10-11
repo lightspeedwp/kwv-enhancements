@@ -7,6 +7,31 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Added
+
+- **Events — "Accommodation nearby"** (`modules/event-accommodation.php`, `blocks/event-accommodation/`).
+  Client change request (quoted and approved separately). Larger events can list places to stay
+  from Booking.com, Airbnb, LekkeSlaap or any other site:
+  - New **Accommodation nearby** repeater on the Event Details field group
+    (`acf-json/group_kwv_events.json`): *Link* (required), *Name* (required) and an optional
+    *Image* from the media library. Values are plain post meta in SCF's repeater shape
+    (`kwv_event_accommodation` = row count, `kwv_event_accommodation_{n}_{url|title|image}`).
+  - New dynamic block **`kwv/event-accommodation`** (the `EventAccommodation` module) renders an
+    "Accommodation nearby" heading and a grid of cards (up to four per row, one column on phones),
+    and **nothing at all when the event has no entries**. Each card links out in a new tab
+    (`rel="noopener noreferrer nofollow"`, announced to screen readers) with a "via {platform}" line;
+    the platform is detected from the link's host, falling back to the bare domain. Without an
+    image the card shows a tinted brand panel naming the platform.
+  - Cards are core block markup run through `do_blocks()`, so they take the theme's **Event Card**
+    section style and **Image Hover Zoom** image style — no plugin CSS. Rows without a valid
+    http(s) link or a name are skipped.
+  - Images are uploaded by the editor, not scraped from the listing: Airbnb and Booking.com block
+    server-side fetches, and listing photos belong to the host/platform.
+  - The editor previews the block via ServerSideRender (plain ES5 `index.js`, no build step) and
+    shows a short note when there is nothing to render.
+
+  The theme places the block on the single-event template (kwv-theme-2026, same branch name).
+
 ### Changed
 
 - **Booking forms — event-driven field visibility** (`modules/events-booking-form.php`).
