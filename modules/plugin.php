@@ -51,11 +51,15 @@ final class Plugin {
 	 * is fine; each module owns its own ordering internally).
 	 */
 	private function __construct() {
+		$careers = new Careers();
+
 		$this->modules = array(
 			new AcfJson(),
 			new BlockBindings(),
-			new Careers(),
-			new ApplicationForm(),
+			$careers,
+			new ApplicationForm( new EmailTemplate() ),
+			new ApplicationContext( $careers ),
+			new CareersModal( $careers ),
 			new Events(),
 			new BookingForm(),
 			new WinemakersClub(),
