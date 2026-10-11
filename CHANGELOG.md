@@ -31,6 +31,23 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     shows a short note when there is nothing to render.
 
   The theme places the block on the single-event template (kwv-theme-2026, same branch name).
+- **Events — "Book now" links carry the event** (`modules/block-bindings.php`).
+  New block-binding source **`kwv/event-booking-url`** for a button's `url`: returns the page in
+  `args.path` (e.g. `/visit/cellar/`) with `?event=` (the event's dropdown label,
+  "Title — 15 Aug 2026, 18:00") and `?event_url=` (its permalink). Gravity Forms pre-populates
+  from these: the venue booking forms pre-select the event in their *Event you wish to book for*
+  dropdown (which in turn hides Date/Time), and the generic *Event Enquiry* form fills its Event
+  field and a hidden *Event page* field. The query string also keeps the form page out of the
+  full-page cache, so pre-filled values are never shared between visitors. Returns null (keeps the
+  button's saved URL) outside an event.
+
+### Fixed
+
+- **Booking dropdown labels are plain text** (`BookingForm::choice_label()`). `get_the_title()`
+  encodes `&` as `&#038;`, which leaked into the stored choice values and entries; titles are now
+  entity-decoded (Gravity Forms escapes on output). Needed so `?event=` matches the dropdown and
+  reads naturally in the generic form.
+
 
 ### Changed
 

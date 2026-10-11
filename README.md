@@ -49,6 +49,7 @@ The `kwv_event` post type for the Visit Us venues, its **Brand** taxonomy, and t
   | Time | `kwv_event_time` | Time picker, e.g. `18:00`. |
   | Accommodation nearby | `kwv_event_accommodation` | Repeater: *Link* (`url`), *Name* (`title`), optional *Image* (`image`, attachment ID). Stored as `kwv_event_accommodation_{n}_{sub_field}`. |
 
+- **Book now links** — the `kwv/event-booking-url` binding source (`modules/block-bindings.php`) gives the single-event "Book now" buttons a URL of `{path}?event={label}&event_url={permalink}`. The venue booking forms (field 3, parameter `event`) and the generic Event Enquiry form (`event` → Event field, `event_url` → hidden Event page field) pre-populate from it. Which button shows is decided by Block Visibility rules on the Brand taxonomy in the template, not by code.
 - **Accommodation nearby** — `modules/event-accommodation.php` registers the dynamic `kwv/event-accommodation` block (`blocks/event-accommodation/`), which the theme places on the single-event template. It renders a heading and a grid of linked cards from the repeater, and nothing when an event has no entries. The platform label ("via Airbnb") comes from the link's host. Cards are core block markup styled by the theme's Event Card section style, so the plugin ships no CSS.
 
 - **Auto-expiry** — a daily WP-Cron event (`kwv_events_expire_events`) moves any published event past its date to **Draft**. An event stays live *on* its date and drops out of the booking dropdowns once drafted.
