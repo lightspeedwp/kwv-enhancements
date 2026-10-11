@@ -7,7 +7,74 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Added
+
+- **Careers — application form readme** (`docs/careers-application-form.md`): how the
+  form, job context, notifications and their conditional rows work.
+
+### Removed
+
+- **Careers — per-job "Application Form" field.** Every job now uses the shared
+  "KWV Job Application" form; `Careers::get_form_id()` takes no argument and ignores
+  any `kwv_career_form_id` meta left on older jobs.
+
+### Fixed
+
+- **Careers form — CV "Choose file" button** now centres with the "No file chosen"
+  text (an inherited 36px line-height + top alignment pushed it down).
+- **Careers modal — close button** no longer shrinks to 26px tall when the modal
+  scrolls (`flex-shrink: 0`), which lifted it above the title and squashed its hover fill.
+
+- **Careers — job modal on the jobs board** (`modules/careers-modal.php`,
+  `assets/careers-modal.{css,js}`). A job's "Read More" link and linked title on the
+  Careers listing now open a modal — title, reference, location/department/closing
+  date, the job description, the LinkedIn Easy Apply button (when set) and the
+  application form — instead of navigating. Progressive enhancement: the links are
+  tagged (`data-kwv-career-open`) via `render_block_core/read-more` and
+  `render_block_core/post-title`, so without JavaScript (or on Cmd/Ctrl-click) they
+  still go to the single-job page. One shared copy of the form lives in the dialog
+  and submits over AJAX, so the confirmation appears in the modal; the script sets
+  its hidden Job ID per job. Native `<dialog>`: focus moves to the close button,
+  Escape/backdrop close, focus returns to the link, page scroll is locked.
+- **Careers — LinkedIn Easy Apply link** field (`kwv_career_linkedin_url`, SCF
+  `url` field, REST-exposed, sanitised with `esc_url_raw`). When set, an "Easy Apply
+  with LinkedIn" button (opens in a new tab) shows above the application form in the
+  modal and on the single-job page; when blank the CV form is the only route.
+- **Careers — server-side job context** (`modules/careers-application-context.php`).
+  Applications record the job's title, reference, link, location, department and
+  closing date in hidden fields filled from the posted Job ID at submission — browser
+  values are overwritten — and an application for a closed job is refused with
+  "Sorry — applications for this position have closed."
+- **`EmailTemplate`** (`modules/email-template.php`) — a code copy of the branded KWV
+  email shell the Contact/Booking notifications use (dark header + logo, details
+  table, gold CTA, footer), for plugin-provisioned notifications.
+
 ### Changed
+
+- **Careers — simplified application form (schema 2).** The shared "KWV Job
+  Application" form is now Name, Surname, Email, Phone and CV upload (PDF/Word, 5MB),
+  plus hidden job fields (Job ID 17, Job Title 15, Job Reference 16, Job Link 18,
+  Location 19, Department 20, Closing Date 21). Gender, Race, CTC, expected
+  remuneration, location, notice period, qualification upload, relocation and message
+  are gone. Kept field ids (Email 1, Name 2, Surname 3, Phone 10, CV 11) so existing
+  entries still show those values; data from removed fields stays in the database.
+  The form is now **versioned**: `ApplicationForm::SCHEMA_VERSION` (2) vs the
+  `kwv_careers_form_schema` option. An installed schema-1 form is migrated in place
+  once on the next request after deploy — fields, form class (`kwv-career-form`),
+  button ("Submit application") and default confirmation rewritten, the old bare
+  `{all_fields}` admin notification removed, any other admin-added notification kept.
+- **Careers — notifications.** *HR — New Application*: plain text to the
+  `kwv_careers_hr_email` option (else the site admin email), Reply-To the applicant,
+  CV attached, listing the position (title, ref, department, location, closing date,
+  posting link), the applicant (name, email, phone, CV link) and the submission
+  (date, page, entry ID + admin link). *Applicant Confirmation*: branded HTML with the
+  same summary, Reply-To HR, and a "View current vacancies" button. The on-page
+  confirmation names the job and ref. Empty job details drop out (conditional
+  shortcodes in the HTML, a `gform_pre_send_email` tidy for the HR subject).
+- **`[kwv_career_form]`** now renders the whole apply panel (Easy Apply button +
+  form, or a "closed" notice) inside a `.kwv-career-apply` wrapper, and
+  `assets/careers-form.css` is scoped to that wrapper (was `.single-kwv_career`) so
+  the same styling applies in the modal.
 
 - **Booking forms — event-driven field visibility** (`modules/events-booking-form.php`).
   The venue booking forms now adapt to what is actually scheduled:
@@ -30,6 +97,37 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Date + Time pair that form 4 already had, all three carry the `kwv-booking-form`
   class the theme styles against, and the `{Date and time:4}` notification merge tag
   became `{Date:7} {Time:8}`.
+
+  The notifications were also rewritten as **enquiries the venue answers** — subjects
+  "New/Your booking **enquiry** — {Venue}", the guest email stating that the venue's
+  team will check availability and email to confirm (and that the booking is confirmed
+  only once they reply), and the admin email asking staff to reply to confirm. The
+  *Experience* and *Preferred date/time* details rows are now wrapped in Gravity Forms'
+  conditional shortcode keyed to the event field being empty, so each email shows only
+  the one the guest supplied rather than one permanently blank labelled row.
+
+  **Launch dependency:** the admin notification still goes to
+  `zared@lightspeedwp.dev`. The guest copy now promises a reply *from the venue*, so
+  the recipient needs to become each venue's own inbox (`info@kwvemporium.co.za`,
+  `cathedralcellar@kwv.co.za`, `houseoffire@kwv.co.za`) before launch.
+
+### Fixed
+
+- **Careers — auto-expiry lag.** Expiry drafted jobs from a *daily* cron that fires
+  at whatever time it was first scheduled (on dev ~19:35, via Cron Control), so a
+  job stayed on the listing for most of the day after its closing date — and the
+  host edge cache could serve that listing longer still. Jobs are now filtered out
+  of front-end listings at query time the moment the closing date has passed
+  (`PostTypeModule::hides_expired()`, opted into by Careers), and the cron runs
+  **hourly** (an existing daily event is rescheduled automatically). The cron query
+  bypasses the new filter via the `kwv_include_expired` query var. Events share the
+  hourly cadence but don't opt into the query-time filter.
+- **Careers — form missing from the theme's single-job template.** WordPress runs
+  `do_shortcode()` on a block template's raw markup *before* blocks render, so the
+  `[kwv_career_form]` inside the `kwv/template-single-career` pattern was never
+  expanded (dev only worked because its DB template override has the markup
+  flattened). A Shortcode block holding exactly that shortcode is now expanded at
+  render time — needed before the 182318 override is deleted on theme deploy.
 
 ## [1.1.0] - 2026-08-10
 

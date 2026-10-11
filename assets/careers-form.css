@@ -1,11 +1,12 @@
 /**
  * KWV Careers — job application form styling.
  *
- * Enqueued by the plugin on single kwv_career pages (the form is embedded with the
- * [kwv_career_form] shortcode, so it can't ride a block stylesheet). Scoped to the
- * `.single-kwv_career` body class WordPress adds on those pages, so it's independent
- * of the form id (which differs per environment) and of theme-file vs DB-template
- * rendering. It uses the theme's global CSS custom properties (theme.json emits them
+ * Enqueued by the plugin on single kwv_career pages and on the jobs board when the
+ * job modal is in use (the form is embedded by the plugin, not the Gravity Forms
+ * block, so it can't ride a block stylesheet). Scoped to the `.kwv-career-apply`
+ * wrapper the plugin renders around the form — on the single-job page
+ * ([kwv_career_form]) and in the modal alike — so it's independent of the form id
+ * (which differs per environment) and of theme-file vs DB-template rendering. It uses the theme's global CSS custom properties (theme.json emits them
  * to :root), so it stays token-driven and in step with the palette.
  *
  * `!important` + an explicit `height:auto` are used deliberately: Gravity Forms ships
@@ -21,14 +22,14 @@
 /* Uniform field appearance — text/email/tel/number/url/select/textarea AND file
    inputs share one square, 1px neutral border on a base fill. height:auto stops the
    Orbital fixed-height controls from clipping the value once padding is applied. */
-.single-kwv_career .gform_wrapper .gfield input[type="text"],
-.single-kwv_career .gform_wrapper .gfield input[type="email"],
-.single-kwv_career .gform_wrapper .gfield input[type="tel"],
-.single-kwv_career .gform_wrapper .gfield input[type="number"],
-.single-kwv_career .gform_wrapper .gfield input[type="url"],
-.single-kwv_career .gform_wrapper .gfield select,
-.single-kwv_career .gform_wrapper .gfield textarea,
-.single-kwv_career .gform_wrapper .gfield input[type="file"] {
+.kwv-career-apply .gform_wrapper .gfield input[type="text"],
+.kwv-career-apply .gform_wrapper .gfield input[type="email"],
+.kwv-career-apply .gform_wrapper .gfield input[type="tel"],
+.kwv-career-apply .gform_wrapper .gfield input[type="number"],
+.kwv-career-apply .gform_wrapper .gfield input[type="url"],
+.kwv-career-apply .gform_wrapper .gfield select,
+.kwv-career-apply .gform_wrapper .gfield textarea,
+.kwv-career-apply .gform_wrapper .gfield input[type="file"] {
 	box-sizing: border-box !important;
 	width: 100% !important;
 	height: auto !important;
@@ -42,19 +43,19 @@
 	transition: border-color 0.2s ease-in-out;
 }
 
-.single-kwv_career .gform_wrapper .gfield select {
+.kwv-career-apply .gform_wrapper .gfield select {
 	min-height: 3rem !important; /* room for the value + native arrow */
 }
 
-.single-kwv_career .gform_wrapper .gfield input:focus,
-.single-kwv_career .gform_wrapper .gfield select:focus,
-.single-kwv_career .gform_wrapper .gfield textarea:focus {
+.kwv-career-apply .gform_wrapper .gfield input:focus,
+.kwv-career-apply .gform_wrapper .gfield select:focus,
+.kwv-career-apply .gform_wrapper .gfield textarea:focus {
 	border-color: var(--wp--preset--color--brand-500) !important;
 	outline: none !important;
 }
 
-.single-kwv_career .gform_wrapper .gfield input::placeholder,
-.single-kwv_career .gform_wrapper .gfield textarea::placeholder {
+.kwv-career-apply .gform_wrapper .gfield input::placeholder,
+.kwv-career-apply .gform_wrapper .gfield textarea::placeholder {
 	color: var(--wp--preset--color--neutral-600) !important;
 	opacity: 1 !important;
 }
@@ -62,14 +63,18 @@
 /* File uploads — the native input showed the unstyled OS control, clipped by the
    Orbital control height. Give it the same field frame, let it grow (height:auto,
    above), and dress the picker as a compact contrast button. */
-.single-kwv_career .gform_wrapper .gfield input[type="file"] {
+.kwv-career-apply .gform_wrapper .gfield input[type="file"] {
 	padding: var(--wp--preset--spacing--10) !important;
 	cursor: pointer;
 }
 
-.single-kwv_career .gform_wrapper .gfield input[type="file"]::file-selector-button {
-	margin-right: var(--wp--preset--spacing--20);
+.kwv-career-apply .gform_wrapper .gfield input[type="file"]::file-selector-button {
+	margin: 0 var(--wp--preset--spacing--20) 0 0;
 	padding: 0.5rem var(--wp--preset--spacing--20);
+	/* Something upstream gives the button a 36px line-height and top alignment, so
+	   it hung below the "No file chosen" text. Pin both so the two centre. */
+	line-height: var(--wp--custom--line-height--button);
+	vertical-align: middle;
 	background-color: var(--wp--preset--color--contrast);
 	color: var(--wp--preset--color--base);
 	border: 0;
@@ -83,11 +88,11 @@
 	transition: background-color 0.2s ease-in-out;
 }
 
-.single-kwv_career .gform_wrapper .gfield input[type="file"]::file-selector-button:hover {
+.kwv-career-apply .gform_wrapper .gfield input[type="file"]::file-selector-button:hover {
 	background-color: var(--wp--preset--color--neutral-700);
 }
 
-.single-kwv_career .gform_wrapper .gfield .gform_fileupload_rules {
+.kwv-career-apply .gform_wrapper .gfield .gform_fileupload_rules {
 	display: block;
 	margin-top: var(--wp--preset--spacing--10);
 	font-size: var(--wp--preset--font-size--100);
@@ -100,15 +105,15 @@
    button was dragged to that full height (no button height rule can beat a flex
    stretch). Neutralise the footer: block layout + hide the AJAX noise so it
    collapses to the button. Verified in the live DOM (138px → 48px). */
-.single-kwv_career .gform_wrapper .gform_footer,
-.single-kwv_career .gform_wrapper .gform-footer {
+.kwv-career-apply .gform_wrapper .gform_footer,
+.kwv-career-apply .gform_wrapper .gform-footer {
 	display: block !important;
 }
 
-.single-kwv_career .gform_wrapper .gform_footer br,
-.single-kwv_career .gform_wrapper .gform_footer input[type="hidden"],
-.single-kwv_career .gform_wrapper .gform-footer br,
-.single-kwv_career .gform_wrapper .gform-footer input[type="hidden"] {
+.kwv-career-apply .gform_wrapper .gform_footer br,
+.kwv-career-apply .gform_wrapper .gform_footer input[type="hidden"],
+.kwv-career-apply .gform_wrapper .gform-footer br,
+.kwv-career-apply .gform_wrapper .gform-footer input[type="hidden"] {
 	display: none !important;
 }
 
@@ -116,8 +121,8 @@
    fill + base text, flipping to a base fill + contrast text on hover/focus).
    fit-content keeps it content-width in the now-block footer; min-height gives a
    clean ~48px matching the fields. */
-.single-kwv_career .gform_wrapper .gform_footer .gform_button,
-.single-kwv_career .gform_wrapper .gform-footer .gform_button {
+.kwv-career-apply .gform_wrapper .gform_footer .gform_button,
+.kwv-career-apply .gform_wrapper .gform-footer .gform_button {
 	display: inline-flex !important;
 	align-items: center !important;
 	justify-content: center !important;
@@ -139,11 +144,107 @@
 	transition: background-color 0.25s ease-in-out, color 0.25s ease-in-out;
 }
 
-.single-kwv_career .gform_wrapper .gform_footer .gform_button:hover,
-.single-kwv_career .gform_wrapper .gform_footer .gform_button:focus-visible,
-.single-kwv_career .gform_wrapper .gform-footer .gform_button:hover,
-.single-kwv_career .gform_wrapper .gform-footer .gform_button:focus-visible {
+.kwv-career-apply .gform_wrapper .gform_footer .gform_button:hover,
+.kwv-career-apply .gform_wrapper .gform_footer .gform_button:focus-visible,
+.kwv-career-apply .gform_wrapper .gform-footer .gform_button:hover,
+.kwv-career-apply .gform_wrapper .gform-footer .gform_button:focus-visible {
 	background-color: var(--wp--preset--color--base) !important;
 	color: var(--wp--preset--color--contrast) !important;
 	border-color: var(--wp--preset--color--contrast) !important;
+}
+
+/* Screen-reader-only text (the "(opens in a new tab)" suffix, the modal's close
+   label). Own class so it doesn't depend on the theme shipping .screen-reader-text. */
+.kwv-sr-only {
+	position: absolute !important;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* LinkedIn Easy Apply — shown above the form when the job has an Easy Apply link.
+   A full-width contrast CTA (same family as the submit button), then an "or apply
+   with your CV below" rule so the form reads as the alternative route. */
+.kwv-career-apply .kwv-career-easy-apply {
+	display: flex;
+	flex-direction: column;
+	gap: var(--wp--preset--spacing--30);
+	margin-bottom: var(--wp--preset--spacing--30);
+}
+
+.kwv-career-apply .kwv-career-easy-apply__button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--wp--preset--spacing--10);
+	min-height: 3rem;
+	padding: 0 var(--wp--custom--spacing--button--padding-horizontal);
+	background-color: var(--wp--preset--color--contrast);
+	color: var(--wp--preset--color--base);
+	border: 1px solid var(--wp--preset--color--contrast);
+	font-family: var(--wp--preset--font-family--heading);
+	font-size: var(--wp--preset--font-size--200);
+	font-weight: var(--wp--custom--font-weight--semi-bold);
+	letter-spacing: var(--wp--custom--letter-spacing--narrow);
+	text-transform: uppercase;
+	text-decoration: none;
+	transition: background-color 0.25s ease-in-out, color 0.25s ease-in-out;
+}
+
+.kwv-career-apply .kwv-career-easy-apply__button:hover,
+.kwv-career-apply .kwv-career-easy-apply__button:focus-visible {
+	background-color: var(--wp--preset--color--base);
+	color: var(--wp--preset--color--contrast);
+}
+
+.kwv-career-apply .kwv-career-easy-apply__icon {
+	flex: none;
+}
+
+.kwv-career-apply .kwv-career-easy-apply__or {
+	display: flex;
+	align-items: center;
+	gap: var(--wp--preset--spacing--20);
+	margin: 0;
+	color: var(--wp--preset--color--neutral-600);
+	font-size: var(--wp--preset--font-size--100);
+	letter-spacing: var(--wp--custom--letter-spacing--wide);
+	text-transform: uppercase;
+}
+
+.kwv-career-apply .kwv-career-easy-apply__or::before,
+.kwv-career-apply .kwv-career-easy-apply__or::after {
+	content: "";
+	flex: 1 1 0;
+	border-top: 1px solid var(--wp--preset--color--neutral-300);
+}
+
+/* "Applications for this position have closed." — replaces the form once a job is
+   past its closing date. */
+.kwv-career-apply .kwv-career-apply__closed {
+	margin: 0;
+	padding: var(--wp--preset--spacing--20);
+	background-color: var(--wp--preset--color--neutral-100);
+	border-left: 3px solid var(--wp--preset--color--brand-500);
+	font-size: var(--wp--preset--font-size--200);
+}
+
+/* The on-page confirmation that replaces the form after a successful submission. */
+.kwv-career-apply .kwv-career-confirmation p {
+	margin: 0 0 var(--wp--preset--spacing--10);
+	font-size: var(--wp--preset--font-size--200);
+	line-height: var(--wp--custom--line-height--body);
+}
+
+.kwv-career-apply .kwv-career-confirmation .kwv-career-confirmation__title {
+	font-family: var(--wp--preset--font-family--heading);
+	font-size: var(--wp--preset--font-size--300);
+	font-weight: var(--wp--custom--font-weight--bold);
+	text-transform: uppercase;
+	color: var(--wp--preset--color--brand-500);
 }

@@ -17,7 +17,7 @@ KWV Enhancements plugin (this repo)            kwv-theme-2026 (theme repo)
                                                 └─ assets/styles/core-*.css   (:hover only)
 ```
 
-The plugin is a small OO module system (namespace `KWV\Enhancements`). Each concern is a class implementing the `Module` interface; a content type extends the **`PostTypeModule`** base (`modules/post-type-module.php`), which already owns CPT registration, the meta-field loop, and the daily auto-expiry cron. The `Plugin` container (`modules/plugin.php`) instantiates the modules and drives their lifecycle. See the README's Architecture section.
+The plugin is a small OO module system (namespace `KWV\Enhancements`). Each concern is a class implementing the `Module` interface; a content type extends the **`PostTypeModule`** base (`modules/post-type-module.php`), which already owns CPT registration, the meta-field loop, and the hourly auto-expiry cron. The `Plugin` container (`modules/plugin.php`) instantiates the modules and drives their lifecycle. See the README's Architecture section.
 
 Key rule: **an SCF field's `name` MUST equal the `register_post_meta` key**, so SCF writes to the same REST-exposed key the theme's block bindings read. That single decision is what makes fields work end-to-end.
 
@@ -25,11 +25,11 @@ Key rule: **an SCF field's `name` MUST equal the `register_post_meta` key**, so 
 
 ## 1. Plugin — register the post type + meta (`modules/<type>.php`)
 
-Add a class that **extends `PostTypeModule`**. The base already registers the CPT and meta on `init`, self-heals the expiry schedule, and runs the daily expiry cron — you implement only the abstract hooks:
+Add a class that **extends `PostTypeModule`**. The base already registers the CPT and meta on `init`, self-heals the expiry schedule (including moving an old daily event onto the hourly cadence), and runs the expiry cron — you implement only the abstract hooks:
 
 1. `post_type()` / `post_type_args()` — the slug and the `register_post_type()` args. Keep `show_in_rest => true`, set the rewrite slug, decide `has_archive`. **The CPT lives in code here — not in SCF's post-type UI** — so it doesn't depend on SCF being active and is portable/reviewable.
 2. `meta_fields()` — return a `meta key => description` map. The base registers each as single, REST-exposed, sanitised string meta with an `edit_posts` `auth_callback`. This is the contract that makes meta REST-visible and binding-friendly. **SCF supplies the editor UI; `register_post_meta` supplies the contract — keep both.**
-3. `expiry_hook()` / `expiry_meta_key()` — the cron hook name and the `Ymd` date meta key that drives auto-expiry (declare the hook name as a class const). The base handles scheduling, self-healing on `init`, and drafting past-dated items.
+3. `expiry_hook()` / `expiry_meta_key()` — the cron hook name and the `Ymd` date meta key that drives auto-expiry (declare the hook name as a class const). The base handles scheduling, self-healing on `init`, and drafting past-dated items. Override `hides_expired()` to return `true` if listings should drop past-dated items the moment their date passes (Careers does); `is_expired()` is available for templates/forms. Override `meta_sanitize_callback()` for fields that aren't plain text (Careers sanitises its LinkedIn URL with `esc_url_raw`).
 4. Anything type-specific (a taxonomy, a shortcode, an enqueue) goes in an overridden `register()` that calls `parent::register()` first — see how `Events` adds its Brand taxonomy and `Careers` adds the form shortcode. If a module needs extra activation work, override `activate()` (call the parent or re-run the pieces in order).
 5. `require` the file in `kwv-enhancements.php` and add the class to the module list in `Plugin::__construct()`. Activation/deactivation are automatic for any module implementing `Activatable`/`Deactivatable` (which `PostTypeModule` does).
 
