@@ -4,8 +4,7 @@
  *
  * Creates the "KWV Job Application" form (when Gravity Forms is active) and
  * stores its id in the {@see Careers::FORM_OPTION} option. The theme's
- * single-job template and the jobs modal embed this form by default;
- * individual jobs can override it with the kwv_career_form_id field (see
+ * single-job template and the jobs modal embed this form for every job (see
  * Careers::get_form_id()).
  *
  * The form is versioned ({@see SCHEMA_VERSION}, recorded in
@@ -291,8 +290,7 @@ class ApplicationForm implements Module {
 	 * A hidden field that records one job detail.
 	 *
 	 * The inputName is the contract {@see ApplicationContext} fills by (keys of
-	 * Careers::job_details()), so any form with these inputNames — a per-job
-	 * override form included — gets the job details recorded.
+	 * Careers::job_details()), so any form with these inputNames gets the job details recorded.
 	 *
 	 * @param int    $id            Field ID.
 	 * @param string $label         Field label (also the merge-tag label).

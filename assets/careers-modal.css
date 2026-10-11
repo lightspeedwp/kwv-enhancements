@@ -58,6 +58,10 @@ html:has(.kwv-career-modal[open]) {
 	top: 0;
 	z-index: 1;
 	align-self: flex-end;
+	/* The panel is a scrolling flex column: without this, once the content
+	   overflows the button shrinks (44px → 26px tall), which lifted it above the
+	   title and squashed its hover fill. */
+	flex-shrink: 0;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;

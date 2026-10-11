@@ -96,29 +96,6 @@
 			},
 			"default_value": "",
 			"placeholder": "https://www.linkedin.com/jobs/view/…"
-		},
-		{
-			"key": "field_kwv_career_form_id",
-			"label": "Application Form",
-			"name": "kwv_career_form_id",
-			"aria-label": "",
-			"type": "select",
-			"instructions": "Choose the Gravity Forms form to embed on this job. Leave blank to use the shared \"KWV Job Application\" form.",
-			"required": 0,
-			"conditional_logic": 0,
-			"wrapper": {
-				"width": "",
-				"class": "",
-				"id": ""
-			},
-			"choices": {},
-			"default_value": "",
-			"return_format": "value",
-			"multiple": 0,
-			"allow_null": 1,
-			"ui": 1,
-			"ajax": 0,
-			"placeholder": "Use shared application form"
 		}
 	],
 	"location": [
@@ -141,5 +118,5 @@
 	"active": true,
 	"description": "Custom fields for the Careers (kwv_career) post type. Managed as code in the KWV Enhancements plugin's /acf-json directory.",
 	"show_in_rest": 1,
-	"modified": 1791763200
+	"modified": 1791849600
 }

@@ -16,7 +16,7 @@
  * post it.
  *
  * Works for any form whose hidden fields use these inputNames (keys of
- * {@see Careers::job_details()}), so a per-job override form can opt in too.
+ * {@see Careers::job_details()}), so another form could opt in too.
  * Inert when Gravity Forms is not active.
  *
  * @package KWV_Enhancements

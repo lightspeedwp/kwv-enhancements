@@ -9,6 +9,22 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 
+- **Careers — application form readme** (`docs/careers-application-form.md`): how the
+  form, job context, notifications and their conditional rows work.
+
+### Removed
+
+- **Careers — per-job "Application Form" field.** Every job now uses the shared
+  "KWV Job Application" form; `Careers::get_form_id()` takes no argument and ignores
+  any `kwv_career_form_id` meta left on older jobs.
+
+### Fixed
+
+- **Careers form — CV "Choose file" button** now centres with the "No file chosen"
+  text (an inherited 36px line-height + top alignment pushed it down).
+- **Careers modal — close button** no longer shrinks to 26px tall when the modal
+  scrolls (`flex-shrink: 0`), which lifted it above the title and squashed its hover fill.
+
 - **Careers — job modal on the jobs board** (`modules/careers-modal.php`,
   `assets/careers-modal.{css,js}`). A job's "Read More" link and linked title on the
   Careers listing now open a modal — title, reference, location/department/closing

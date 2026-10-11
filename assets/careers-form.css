@@ -69,8 +69,12 @@
 }
 
 .kwv-career-apply .gform_wrapper .gfield input[type="file"]::file-selector-button {
-	margin-right: var(--wp--preset--spacing--20);
+	margin: 0 var(--wp--preset--spacing--20) 0 0;
 	padding: 0.5rem var(--wp--preset--spacing--20);
+	/* Something upstream gives the button a 36px line-height and top alignment, so
+	   it hung below the "No file chosen" text. Pin both so the two centre. */
+	line-height: var(--wp--custom--line-height--button);
+	vertical-align: middle;
 	background-color: var(--wp--preset--color--contrast);
 	color: var(--wp--preset--color--base);
 	border: 0;

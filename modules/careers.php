@@ -1,11 +1,11 @@
 <?php
 /**
  * Careers module — the kwv_career job post type, its custom fields, the
- * closing-date auto-expiry, and the per-job application-form resolution.
+ * closing-date auto-expiry, and the shared application form lookup.
  *
  * The shared CPT/meta/expiry machinery lives in {@see PostTypeModule}; this
- * class adds the Careers-specific pieces: the SCF form-picker choices, the
- * per-job form resolution, the LinkedIn Easy Apply link, the
+ * class adds the Careers-specific pieces: the shared application form
+ * lookup, the LinkedIn Easy Apply link, the
  * [kwv_career_form] shortcode (the "apply" panel: Easy Apply button + form),
  * and the form stylesheet. It also opts in to hiding expired jobs from
  * listings at query time, so a job leaves the board the moment its closing
@@ -62,7 +62,6 @@ class Careers extends PostTypeModule {
 	public function register(): void {
 		parent::register();
 
-		add_filter( 'acf/load_field/name=kwv_career_form_id', array( $this, 'load_form_choices' ) );
 		add_shortcode( 'kwv_career_form', array( $this, 'render_form' ) );
 		add_filter( 'render_block_core/shortcode', array( $this, 'render_form_block' ), 10, 2 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_form_style' ) );
@@ -170,50 +169,20 @@ class Careers extends PostTypeModule {
 			'kwv_career_location'     => __( 'Where the role is based, e.g. Paarl, Western Cape.', 'kwv-enhancements' ),
 			'kwv_career_department'   => __( 'The department the role sits in.', 'kwv-enhancements' ),
 			'kwv_career_closing_date' => __( 'Closing date (stored as Ymd). The job auto-expires to Draft after this date.', 'kwv-enhancements' ),
-			'kwv_career_form_id'      => __( 'Gravity Forms form ID to embed on this job. Empty falls back to the shared application form.', 'kwv-enhancements' ),
 			self::LINKEDIN_META       => __( 'LinkedIn Easy Apply link. When set, the job shows an "Easy Apply with LinkedIn" button beside the application form.', 'kwv-enhancements' ),
 		);
 	}
 
 	/**
-	 * Populate the "Application form" SCF select with the site's Gravity Forms.
+	 * The Gravity Forms form every job embeds: the shared application form
+	 * installed by {@see ApplicationForm} (stored in the FORM_OPTION option).
 	 *
-	 * The field group in /acf-json declares this select with empty choices; the
-	 * live list of forms is environment-specific, so it is injected at load time.
+	 * Jobs no longer choose their own form; any kwv_career_form_id meta left on
+	 * older jobs is ignored.
 	 *
-	 * @param array $field The ACF/SCF field being loaded.
-	 * @return array The field with a choices map of form-id => title.
-	 */
-	public function load_form_choices( $field ) {
-
-		$field['choices'] = array();
-
-		if ( class_exists( 'GFAPI' ) ) {
-			foreach ( \GFAPI::get_forms() as $form ) {
-				$field['choices'][ (string) $form['id'] ] = sprintf( '%s (#%d)', $form['title'], $form['id'] );
-			}
-		}
-
-		return $field;
-	}
-
-	/**
-	 * Resolve which Gravity Forms form a job should embed.
-	 *
-	 * Per-job kwv_career_form_id wins; otherwise the shared form installed by
-	 * {@see ApplicationForm} (stored in the FORM_OPTION option) is used.
-	 *
-	 * @param int $post_id Job post ID.
 	 * @return int The form ID to render (0 if none is available).
 	 */
-	public function get_form_id( $post_id ) {
-
-		$per_job = (int) get_post_meta( $post_id, 'kwv_career_form_id', true );
-
-		if ( $per_job > 0 ) {
-			return $per_job;
-		}
-
+	public function get_form_id(): int {
 		return (int) get_option( self::FORM_OPTION, 0 );
 	}
 
@@ -318,7 +287,7 @@ class Careers extends PostTypeModule {
 			);
 		}
 
-		return '<div class="kwv-career-apply">' . $this->easy_apply_html( $post_id ) . $this->form_html( $this->get_form_id( $post_id ), $ajax ) . '</div>';
+		return '<div class="kwv-career-apply">' . $this->easy_apply_html( $post_id ) . $this->form_html( $this->get_form_id(), $ajax ) . '</div>';
 	}
 
 	/**

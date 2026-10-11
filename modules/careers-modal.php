@@ -129,7 +129,7 @@ class CareersModal implements Module {
 			return;
 		}
 
-		$form_id                = $this->careers->get_form_id( $post_id );
+		$form_id                = $this->careers->get_form_id();
 		$this->jobs[ $post_id ] = $form_id;
 
 		if ( 1 === count( $this->jobs ) ) {
