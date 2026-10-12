@@ -9,17 +9,17 @@ This plugin is the home for functionality that must **survive a theme switch** �
 A small object-oriented module system under the `KWV\Enhancements` namespace:
 
 - **`Module`** (`modules/module.php`) — every module implements this one-method interface (`register()`, where it wires its hooks). Modules that need setup/teardown also implement **`Activatable`** / **`Deactivatable`**.
-- **`PostTypeModule`** (`modules/post-type-module.php`) — an abstract base that holds the machinery shared by every content type: registering a REST-exposed CPT, registering its string meta fields, and running a daily Ymd-date auto-expiry cron. `Careers` and `Events` extend it and supply only what differs (labels, args, field list, and which meta key drives expiry).
+- **`PostTypeModule`** (`modules/post-type-module.php`) — an abstract base that holds the machinery shared by every content type: registering a REST-exposed CPT, registering its meta fields, and running an hourly Ymd-date auto-expiry cron (plus an opt-in query-time filter that hides past-dated items from listings immediately). `Careers` and `Events` extend it and supply only what differs (labels, args, field list, and which meta key drives expiry).
 - **`Plugin`** (`modules/plugin.php`) — the container. It instantiates the modules, calls `register()` on each, and delegates activation/deactivation (flushing rewrite rules once at the end).
 - **`kwv-enhancements.php`** — a thin bootstrap: defines the `KWV_ENH_*` constants, `require`s the module files, and boots `Plugin::instance()`.
 
-The concrete modules are `AcfJson`, `BlockBindings`, `Careers`, `ApplicationForm`, `Events` and `BookingForm`.
+The concrete modules are `AcfJson`, `BlockBindings`, `Careers`, `ApplicationForm`, `ApplicationContext`, `CareersModal`, `Events`, `BookingForm`, `WinemakersClub` and `PayflexConfigurationCache`. `EmailTemplate` (`modules/email-template.php`) is a helper, not a module: it builds the branded KWV HTML email shell for plugin-provisioned notifications.
 
 ## Modules
 
 ### Careers
 
-The `kwv_career` job post type and its Gravity Forms application form.
+The `kwv_career` job post type, the jobs-board modal, and the Gravity Forms application form.
 
 - **Post type** `kwv_career` — title = role, content = job description, rewrite `careers/{slug}`, no archive (the Careers *page* is the listing). Registered in `modules/careers.php`.
 - **Custom fields** — authored with **Secure Custom Fields** and stored as code in [`acf-json/group_kwv_careers.json`](acf-json/group_kwv_careers.json). Field *names* match the `register_post_meta` keys, so SCF writes to the same REST-exposed keys the theme's block bindings read.
@@ -30,10 +30,14 @@ The `kwv_career` job post type and its Gravity Forms application form.
   | Location | `kwv_career_location` | Free text. |
   | Department | `kwv_career_department` | Free text. |
   | Closing Date | `kwv_career_closing_date` | Date picker. **Auto-expires** the job (see below). |
-  | Application Form | `kwv_career_form_id` | Gravity Forms form to embed. Blank = shared form. |
+  | LinkedIn Easy Apply Link | `kwv_career_linkedin_url` | Optional URL. When set, an "Easy Apply with LinkedIn" button shows above the application form. |
 
-- **Auto-expiry** — a daily WP-Cron event (`kwv_careers_expire_jobs`) moves any published job past its closing date to **Draft** (reversible, and it drops off the front-end listing which only queries published posts). A job stays live *on* its closing day.
-- **Application form** — `modules/careers-application-form.php` (the `ApplicationForm` module) installs the shared "KWV Job Application" Gravity Form once and stores its id in the `kwv_careers_form_id` option. Per-job override via the Application Form field; resolution order is handled by `Careers::get_form_id()`. The `[kwv_career_form]` shortcode renders whichever form a job resolves to.
+- **Auto-expiry** — two layers. Listings of jobs (any front-end, non-singular `kwv_career` query, including the Query Loop on the Careers page) hide a job **as soon as its closing date has passed**, at query time. Separately an **hourly** WP-Cron event (`kwv_careers_expire_jobs`) moves the job to **Draft** shortly after midnight. A job stays live *on* its closing day. A job page left open past closing can't submit: the application is refused server-side. *(Before this, expiry was a daily event that fired at whatever time of day it was first scheduled — ~19:35 on dev — so a job stayed listed for most of the day after it closed, and the host edge cache could hold the listing longer still.)*
+- **Apply panel** — `[kwv_career_form]` renders the job's LinkedIn Easy Apply button (when set), then the application form, or a "closed" notice once the job has closed. It's what the single-job template embeds. A Shortcode block containing exactly `[kwv_career_form]` is expanded at render time (`Careers::render_form_block()`), because block templates only run `do_shortcode()` before blocks render and would otherwise miss it inside a pattern.
+- **Jobs modal** — `modules/careers-modal.php` (`CareersModal`). On the listing, each job's `core/read-more` and linked `core/post-title` get `data-kwv-career-open`; a click opens a `<dialog>` with the job's title, ref, details, content, Easy Apply button and the application form (one shared copy, AJAX-submitted, its hidden Job ID set by `assets/careers-modal.js`). Without JS, or on a modified click, the links go to the single-job page. Styles: `assets/careers-modal.css` (dialog) + `assets/careers-form.css` (form + Easy Apply, scoped to `.kwv-career-apply`).
+- **Application form** — `modules/careers-application-form.php` (`ApplicationForm`) installs the shared "KWV Job Application" Gravity Form and stores its id in the `kwv_careers_form_id` option. The form is versioned (`ApplicationForm::SCHEMA_VERSION`, recorded in the `kwv_careers_form_schema` option): an older installed form is migrated in place once — **bumping the version re-provisions the fields, default confirmation and our two notifications, overwriting admin edits to those**. Schema 2 = Name, Surname, Email, Phone, CV (PDF/Word, 5MB) + hidden job fields. Every job uses this one form (`Careers::get_form_id()`); the former per-job Application Form field was removed. **How the form, its notifications and their conditional rows work: [`docs/careers-application-form.md`](docs/careers-application-form.md).**
+- **Job context** — `modules/careers-application-context.php` (`ApplicationContext`). Fills the hidden Job Title/Reference/Link/Location/Department/Closing Date fields server-side from the posted Job ID (never trusting browser values), and refuses applications for closed jobs. Matches fields by `inputName` (`job_id`, `job_title`, `job_ref`, `job_url`, `job_location`, `job_department`, `job_closing`), so another form could opt in.
+- **Notifications** — *HR — New Application*: plain text, to the `kwv_careers_hr_email` option (falls back to the site admin email) at provisioning time, Reply-To the applicant, **CV attached**, with the job, applicant and entry link. *Applicant Confirmation*: the branded KWV email with the same job + applicant summary, Reply-To HR. Both editable afterwards in Forms → Job Application → Settings → Notifications.
 
 ### Events
 

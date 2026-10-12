@@ -1,0 +1,231 @@
+/**
+ * KWV Careers — job modal on the jobs board.
+ *
+ * Enqueued by the plugin's CareersModal module only on pages where it tagged a job
+ * link. The form inside the modal is styled by careers-form.css (the modal's apply
+ * section carries the same `.kwv-career-apply` wrapper as the single-job page); this
+ * sheet covers the dialog itself and the job content. Token-driven via the theme's
+ * global custom properties, like careers-form.css.
+ */
+
+/* Lock the page behind the open modal. */
+html:has(.kwv-career-modal[open]) {
+	overflow: hidden;
+}
+
+/* The dialog has no padding of its own, so a click that targets the <dialog>
+   element itself can only be a click on the backdrop (the script closes on it). */
+.kwv-career-modal {
+	box-sizing: border-box;
+	width: min(56rem, 100% - 2 * var(--wp--preset--spacing--20));
+	max-width: none;
+	max-height: calc(100dvh - 2 * var(--wp--preset--spacing--20));
+	margin: auto;
+	padding: 0;
+	overflow: hidden;
+	background-color: var(--wp--preset--color--base);
+	color: var(--wp--preset--color--contrast);
+	border: 0;
+	border-top: 4px solid var(--wp--preset--color--brand-500);
+	box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 0.35);
+}
+
+/* The inner panel scrolls (not the dialog), so its scrollbar belongs to the
+   panel and a scrollbar click is never mistaken for a backdrop click. */
+.kwv-career-modal[open] {
+	display: flex;
+	flex-direction: column;
+}
+
+.kwv-career-modal::backdrop {
+	background-color: rgb(0 0 0 / 0.7);
+}
+
+.kwv-career-modal__inner {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	gap: var(--wp--preset--spacing--40);
+	min-height: 0;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	padding: 0 var(--wp--preset--spacing--50) var(--wp--preset--spacing--50);
+}
+
+/* Close — pinned to the top-right while the dialog scrolls. */
+.kwv-career-modal__close {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	align-self: flex-end;
+	/* The panel is a scrolling flex column: without this, once the content
+	   overflows the button shrinks (44px → 26px tall), which lifted it above the
+	   title and squashed its hover fill. */
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	margin: var(--wp--preset--spacing--10) calc(-1 * var(--wp--preset--spacing--30)) calc(-1 * var(--wp--preset--spacing--40)) 0;
+	padding: 0;
+	background-color: var(--wp--preset--color--base);
+	color: var(--wp--preset--color--contrast);
+	border: 1px solid transparent;
+	border-radius: 0;
+	cursor: pointer;
+	transition: background-color 0.25s ease-in-out, color 0.25s ease-in-out;
+}
+
+.kwv-career-modal__close:hover,
+.kwv-career-modal__close:focus-visible {
+	background-color: var(--wp--preset--color--contrast);
+	color: var(--wp--preset--color--base);
+}
+
+.kwv-career-modal__close:focus-visible {
+	outline: 2px solid var(--wp--preset--color--brand-500);
+	outline-offset: 2px;
+}
+
+/* Job header — mirrors the single-job page: brand-gold uppercase role + ref. */
+.kwv-career-modal__job-inner {
+	display: flex;
+	flex-direction: column;
+	gap: var(--wp--preset--spacing--30);
+}
+
+.kwv-career-modal__header {
+	display: flex;
+	flex-direction: column;
+	gap: var(--wp--preset--spacing--10);
+	padding-bottom: var(--wp--preset--spacing--30);
+	border-bottom: 1px solid var(--wp--preset--color--neutral-100);
+}
+
+.kwv-career-modal__title {
+	margin: 0;
+	padding-right: var(--wp--preset--spacing--40);
+	color: var(--wp--preset--color--brand-500);
+	font-family: var(--wp--preset--font-family--heading);
+	font-size: var(--wp--preset--font-size--400);
+	font-weight: var(--wp--custom--font-weight--bold);
+	line-height: var(--wp--custom--line-height--heading);
+	text-transform: uppercase;
+}
+
+.kwv-career-modal__ref {
+	margin: 0;
+	color: var(--wp--preset--color--brand-500);
+	font-family: var(--wp--preset--font-family--heading);
+	font-size: var(--wp--preset--font-size--300);
+	font-weight: var(--wp--custom--font-weight--bold);
+	text-transform: uppercase;
+}
+
+.kwv-career-modal__meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--wp--preset--spacing--10) var(--wp--preset--spacing--40);
+	margin: var(--wp--preset--spacing--10) 0 0;
+	font-size: var(--wp--preset--font-size--200);
+}
+
+.kwv-career-modal__meta div {
+	display: flex;
+	gap: var(--wp--preset--spacing--5);
+}
+
+.kwv-career-modal__meta dt {
+	font-weight: var(--wp--custom--font-weight--bold);
+}
+
+.kwv-career-modal__meta dt::after {
+	content: ":";
+}
+
+.kwv-career-modal__meta dd {
+	margin: 0;
+}
+
+/* The job description KWV wrote — ordinary post content. */
+.kwv-career-modal__content {
+	font-size: var(--wp--preset--font-size--200);
+	line-height: var(--wp--custom--line-height--body);
+}
+
+.kwv-career-modal__content > :first-child {
+	margin-top: 0;
+}
+
+.kwv-career-modal__content > :last-child {
+	margin-bottom: 0;
+}
+
+.kwv-career-modal__content h2,
+.kwv-career-modal__content h3,
+.kwv-career-modal__content h4 {
+	font-size: var(--wp--preset--font-size--300);
+	text-transform: uppercase;
+}
+
+/* Apply section — set apart on a light panel. */
+.kwv-career-modal__apply {
+	display: flex;
+	flex-direction: column;
+	gap: var(--wp--preset--spacing--30);
+	padding: var(--wp--preset--spacing--40);
+	background-color: var(--wp--preset--color--neutral-100);
+}
+
+.kwv-career-modal__apply-heading {
+	margin: 0;
+	color: var(--wp--preset--color--contrast);
+	font-family: var(--wp--preset--font-family--heading);
+	font-size: var(--wp--preset--font-size--300);
+	font-weight: var(--wp--custom--font-weight--bold);
+	line-height: var(--wp--custom--line-height--heading);
+	text-transform: uppercase;
+}
+
+.kwv-career-modal__apply .kwv-career-easy-apply {
+	margin-bottom: 0;
+}
+
+.kwv-career-modal__apply [data-kwv-career-slot="easy-apply"]:empty {
+	display: none;
+}
+
+@media (max-width: 600px) {
+	.kwv-career-modal {
+		width: 100%;
+		max-height: 100dvh;
+		height: 100dvh;
+		border-top-width: 3px;
+	}
+
+	.kwv-career-modal__inner {
+		padding: 0 var(--wp--preset--spacing--20) var(--wp--preset--spacing--40);
+	}
+
+	.kwv-career-modal__close {
+		margin-right: calc(-1 * var(--wp--preset--spacing--10));
+	}
+
+	.kwv-career-modal__apply {
+		padding: var(--wp--preset--spacing--30) var(--wp--preset--spacing--20);
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.kwv-career-modal[open] {
+		animation: kwv-career-modal-in 0.2s ease-out;
+	}
+}
+
+@keyframes kwv-career-modal-in {
+	from {
+		opacity: 0;
+		transform: translateY(1rem);
+	}
+}

@@ -68,7 +68,7 @@
 			"name": "kwv_career_closing_date",
 			"aria-label": "",
 			"type": "date_picker",
-			"instructions": "After this date the job automatically moves to Draft and drops off the listing. It stays live on the closing day itself. Leave blank for no closing date.",
+			"instructions": "The last day applications are accepted. The job drops off the listing as soon as this date has passed (it stays live on the closing day itself) and is moved to Draft shortly after midnight. Leave blank for no closing date.",
 			"required": 0,
 			"conditional_logic": 0,
 			"wrapper": {
@@ -81,12 +81,12 @@
 			"first_day": 1
 		},
 		{
-			"key": "field_kwv_career_form_id",
-			"label": "Application Form",
-			"name": "kwv_career_form_id",
+			"key": "field_kwv_career_linkedin_url",
+			"label": "LinkedIn Easy Apply Link",
+			"name": "kwv_career_linkedin_url",
 			"aria-label": "",
-			"type": "select",
-			"instructions": "Choose the Gravity Forms form to embed on this job. Leave blank to use the shared \"KWV Job Application\" form.",
+			"type": "url",
+			"instructions": "Optional. Paste the job's LinkedIn Easy Apply URL to show an \"Easy Apply with LinkedIn\" button beside the application form. Leave blank and applicants apply with the CV form only.",
 			"required": 0,
 			"conditional_logic": 0,
 			"wrapper": {
@@ -94,14 +94,8 @@
 				"class": "",
 				"id": ""
 			},
-			"choices": {},
 			"default_value": "",
-			"return_format": "value",
-			"multiple": 0,
-			"allow_null": 1,
-			"ui": 1,
-			"ajax": 0,
-			"placeholder": "Use shared application form"
+			"placeholder": "https://www.linkedin.com/jobs/view/…"
 		}
 	],
 	"location": [
@@ -124,5 +118,5 @@
 	"active": true,
 	"description": "Custom fields for the Careers (kwv_career) post type. Managed as code in the KWV Enhancements plugin's /acf-json directory.",
 	"show_in_rest": 1,
-	"modified": 1752566400
+	"modified": 1791849600
 }
