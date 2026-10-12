@@ -60,6 +60,62 @@ class BlockBindings implements Module {
 				'uses_context'       => array( 'postId' ),
 			)
 		);
+
+		register_block_bindings_source(
+			'kwv/event-booking-url',
+			array(
+				'label'              => __( 'KWV Event Booking URL', 'kwv-enhancements' ),
+				'get_value_callback' => array( $this, 'get_event_booking_url' ),
+				'uses_context'       => array( 'postId' ),
+			)
+		);
+	}
+
+	/**
+	 * Build a booking-enquiry link that carries the current event with it.
+	 *
+	 * For the single-event "Book now" buttons. Returns the page in `path`
+	 * (falling back to the button's own saved URL) with two query args the
+	 * Gravity Forms booking forms pre-populate from:
+	 *
+	 * - `event`     — the event's dropdown label ("Title — 15 Aug 2026, 18:00",
+	 *                 {@see BookingForm::choice_label()}), so a venue form
+	 *                 pre-selects the event and the generic form fills its Event
+	 *                 field;
+	 * - `event_url` — the event's permalink, kept in a hidden field so the
+	 *                 enquiry records exactly which page it came from.
+	 *
+	 * Bind a button's `url` to it:
+	 *
+	 *   "bindings":{"url":{"source":"kwv/event-booking-url","args":{"path":"/visit/cellar/"}}}
+	 *
+	 * The query string also keeps the form page out of the full-page cache, so
+	 * the pre-populated values are never shared between visitors.
+	 *
+	 * @param array     $args           Binding args; optional 'path' (site-relative path or URL).
+	 * @param \WP_Block $block_instance The block being rendered (for post context).
+	 * @return string|null The link, or null (keep the saved URL) without an event.
+	 */
+	public function get_event_booking_url( $args, $block_instance ) {
+
+		$post_id = (int) ( $block_instance->context['postId'] ?? get_the_ID() );
+		$base    = ! empty( $args['path'] ) ? (string) $args['path'] : (string) ( $block_instance->attributes['url'] ?? '' );
+
+		if ( ! $post_id || '' === $base ) {
+			return null;
+		}
+
+		if ( 0 === strpos( $base, '/' ) ) {
+			$base = home_url( $base );
+		}
+
+		return add_query_arg(
+			array(
+				'event'     => rawurlencode( ( new BookingForm() )->choice_label( $post_id ) ),
+				'event_url' => rawurlencode( (string) get_permalink( $post_id ) ),
+			),
+			$base
+		);
 	}
 
 	/**

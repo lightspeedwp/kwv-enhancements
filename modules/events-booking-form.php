@@ -176,7 +176,10 @@ class BookingForm implements Module {
 	 */
 	public function choice_label( $event_id ): string {
 
-		$label = get_the_title( $event_id );
+		// Plain text, not HTML: get_the_title() encodes "&" as "&#038;", which
+		// would leak into the stored entry and into the generic event form's
+		// Event field when passed via ?event= (Gravity Forms escapes on output).
+		$label = html_entity_decode( get_the_title( $event_id ), ENT_QUOTES, get_bloginfo( 'charset' ) );
 
 		$raw_date = (string) get_post_meta( $event_id, 'kwv_event_date', true );
 		$time     = trim( (string) get_post_meta( $event_id, 'kwv_event_time', true ) );

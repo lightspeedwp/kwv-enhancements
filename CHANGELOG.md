@@ -9,22 +9,37 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 
-- **Careers — application form readme** (`docs/careers-application-form.md`): how the
-  form, job context, notifications and their conditional rows work.
+- **Events — "Accommodation nearby"** (`modules/event-accommodation.php`, `blocks/event-accommodation/`).
+  Client change request (quoted and approved separately). Larger events can list places to stay
+  from Booking.com, Airbnb, LekkeSlaap or any other site:
+  - New **Accommodation nearby** repeater on the Event Details field group
+    (`acf-json/group_kwv_events.json`): *Link* (required), *Name* (required) and an optional
+    *Image* from the media library. Values are plain post meta in SCF's repeater shape
+    (`kwv_event_accommodation` = row count, `kwv_event_accommodation_{n}_{url|title|image}`).
+  - New dynamic block **`kwv/event-accommodation`** (the `EventAccommodation` module) renders an
+    "Accommodation nearby" heading and a grid of cards (up to four per row, one column on phones),
+    and **nothing at all when the event has no entries**. Each card links out in a new tab
+    (`rel="noopener noreferrer nofollow"`, announced to screen readers) with a "via {platform}" line;
+    the platform is detected from the link's host, falling back to the bare domain. Without an
+    image the card shows a tinted brand panel naming the platform.
+  - Cards are core block markup run through `do_blocks()`, so they take the theme's **Event Card**
+    section style and **Image Hover Zoom** image style — no plugin CSS. Rows without a valid
+    http(s) link or a name are skipped.
+  - Images are uploaded by the editor, not scraped from the listing: Airbnb and Booking.com block
+    server-side fetches, and listing photos belong to the host/platform.
+  - The editor previews the block via ServerSideRender (plain ES5 `index.js`, no build step) and
+    shows a short note when there is nothing to render.
 
-### Removed
-
-- **Careers — per-job "Application Form" field.** Every job now uses the shared
-  "KWV Job Application" form; `Careers::get_form_id()` takes no argument and ignores
-  any `kwv_career_form_id` meta left on older jobs.
-
-### Fixed
-
-- **Careers form — CV "Choose file" button** now centres with the "No file chosen"
-  text (an inherited 36px line-height + top alignment pushed it down).
-- **Careers modal — close button** no longer shrinks to 26px tall when the modal
-  scrolls (`flex-shrink: 0`), which lifted it above the title and squashed its hover fill.
-
+  The theme places the block on the single-event template (kwv-theme-2026, same branch name).
+- **Events — "Book now" links carry the event** (`modules/block-bindings.php`).
+  New block-binding source **`kwv/event-booking-url`** for a button's `url`: returns the page in
+  `args.path` (e.g. `/visit/cellar/`) with `?event=` (the event's dropdown label,
+  "Title — 15 Aug 2026, 18:00") and `?event_url=` (its permalink). Gravity Forms pre-populates
+  from these: the venue booking forms pre-select the event in their *Event you wish to book for*
+  dropdown (which in turn hides Date/Time), and the generic *Event Enquiry* form fills its Event
+  field and a hidden *Event page* field. The query string also keeps the form page out of the
+  full-page cache, so pre-filled values are never shared between visitors. Returns null (keeps the
+  button's saved URL) outside an event.
 - **Careers — job modal on the jobs board** (`modules/careers-modal.php`,
   `assets/careers-modal.{css,js}`). A job's "Read More" link and linked title on the
   Careers listing now open a modal — title, reference, location/department/closing
@@ -48,6 +63,26 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **`EmailTemplate`** (`modules/email-template.php`) — a code copy of the branded KWV
   email shell the Contact/Booking notifications use (dark header + logo, details
   table, gold CTA, footer), for plugin-provisioned notifications.
+- **Careers — application form readme** (`docs/careers-application-form.md`): how the
+  form, job context, notifications and their conditional rows work.
+
+### Removed
+
+- **Careers — per-job "Application Form" field.** Every job now uses the shared
+  "KWV Job Application" form; `Careers::get_form_id()` takes no argument and ignores
+  any `kwv_career_form_id` meta left on older jobs.
+
+### Fixed
+
+- **Booking dropdown labels are plain text** (`BookingForm::choice_label()`). `get_the_title()`
+  encodes `&` as `&#038;`, which leaked into the stored choice values and entries; titles are now
+  entity-decoded (Gravity Forms escapes on output). Needed so `?event=` matches the dropdown and
+  reads naturally in the generic form.
+- **Careers form — CV "Choose file" button** now centres with the "No file chosen"
+  text (an inherited 36px line-height + top alignment pushed it down).
+- **Careers modal — close button** no longer shrinks to 26px tall when the modal
+  scrolls (`flex-shrink: 0`), which lifted it above the title and squashed its hover fill.
+
 
 ### Changed
 

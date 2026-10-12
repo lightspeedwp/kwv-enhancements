@@ -2,7 +2,7 @@
 /**
  * Plugin Name: KWV Enhancements
  * Plugin URI: https://kwv.co.za
- * Description: Site-specific enhancements and content fixes for the KWV 2026 site — functionality that must survive a theme switch. Ships as modules: Careers (the kwv_career job post type, the jobs-board modal, and its Gravity Forms application form) and Events (the kwv_event post type, its Brand taxonomy, and the dynamic booking-form dropdowns).
+ * Description: Site-specific enhancements and content fixes for the KWV 2026 site — functionality that must survive a theme switch. Ships as modules: Careers (the kwv_career job post type, the jobs-board modal, and its Gravity Forms application form) and Events (the kwv_event post type, its Brand taxonomy, the dynamic booking-form dropdowns, and the "Accommodation nearby" block).
  * Version: 1.1.0
  * Author: LightSpeed
  * Author URI: https://lightspeedwp.agency
@@ -53,6 +53,7 @@ require_once KWV_ENH_DIR . 'modules/careers-application-context.php';
 require_once KWV_ENH_DIR . 'modules/careers-modal.php';
 require_once KWV_ENH_DIR . 'modules/events.php';
 require_once KWV_ENH_DIR . 'modules/events-booking-form.php';
+require_once KWV_ENH_DIR . 'modules/event-accommodation.php';
 require_once KWV_ENH_DIR . 'modules/winemakers-club.php';
 require_once KWV_ENH_DIR . 'modules/payflex-configuration-cache.php';
 require_once KWV_ENH_DIR . 'modules/plugin.php';

@@ -62,6 +62,7 @@ final class Plugin {
 			new CareersModal( $careers ),
 			new Events(),
 			new BookingForm(),
+			new EventAccommodation(),
 			new WinemakersClub(),
 			new PayflexConfigurationCache(),
 		);
