@@ -54,6 +54,7 @@ require_once KWV_ENH_DIR . 'modules/careers-modal.php';
 require_once KWV_ENH_DIR . 'modules/events.php';
 require_once KWV_ENH_DIR . 'modules/events-booking-form.php';
 require_once KWV_ENH_DIR . 'modules/event-accommodation.php';
+require_once KWV_ENH_DIR . 'modules/brands.php';
 require_once KWV_ENH_DIR . 'modules/winemakers-club.php';
 require_once KWV_ENH_DIR . 'modules/payflex-configuration-cache.php';
 require_once KWV_ENH_DIR . 'modules/plugin.php';
