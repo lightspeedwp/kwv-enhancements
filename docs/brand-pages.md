@@ -146,6 +146,7 @@ file. Resetting the part in the Site Editor returns to the file version.
   first until Swiper starts. If Swiper is missing the script removes the class
   again. Without JavaScript the class never appears and all products show.
 - A brand with one product gets `kwv-brand-slider--single` and no slider.
+- **Endless loop:** with three or more products Swiper's `loop` mode is on. It reorders the `<li>` elements around the visible one, so never rely on DOM order: use Swiper's `realIndex` / `data-swiper-slide-index` (thumbnails call `slideToLoop()`). With exactly two products `rewind` wraps the arrows round instead. `loopPreventsSliding: false` lets quick repeated clicks through; Swiper's default drops a click made mid-animation.
 
 ### Styling — `assets/styles/woocommerce-brand-page.css`
 
