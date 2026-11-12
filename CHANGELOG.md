@@ -26,6 +26,8 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     accessible name.
 
   The theme places these on the brand template (kwv-theme-2026, same branch name).
+  How it all fits together (plugin and theme), deploy checklist and troubleshooting:
+  `docs/brand-pages.md`.
 - **Events — "Accommodation nearby"** (`modules/event-accommodation.php`, `blocks/event-accommodation/`).
   Client change request (quoted and approved separately). Larger events can list places to stay
   from Booking.com, Airbnb, LekkeSlaap or any other site:
