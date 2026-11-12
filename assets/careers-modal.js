@@ -34,7 +34,7 @@
 	/**
 	 * Whether a form in the dialog has been submitted (its confirmation is showing).
 	 *
-	 * @return {boolean}
+	 * @return {boolean} True once a confirmation is showing.
 	 */
 	function hasSubmitted() {
 		return !! dialog.querySelector( '.gform_confirmation_wrapper, .gform_confirmation_message' );

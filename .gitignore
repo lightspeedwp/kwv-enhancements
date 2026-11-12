@@ -10,3 +10,6 @@ Thumbs.db
 
 # Build / logs
 *.log
+
+# Coverage reports (npm test)
+/coverage/

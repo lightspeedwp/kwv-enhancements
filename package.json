@@ -1,0 +1,29 @@
+{
+	"name": "kwv-enhancements",
+	"private": true,
+	"license": "GPL-2.0-or-later",
+	"description": "KWV Enhancements plugin. Node tooling only (unit tests, lint): the plugin's scripts ship as plain browser JS with no build step.",
+	"engines": {
+		"node": ">=20"
+	},
+	"scripts": {
+		"test": "vitest run --coverage",
+		"test:watch": "vitest",
+		"test:coverage": "vitest run --coverage",
+		"lint": "eslint .",
+		"format": "prettier --write \"tests/js/**/*.js\" \"*.config.mjs\""
+	},
+	"prettier": "@wordpress/prettier-config",
+	"devDependencies": {
+		"@testing-library/dom": "^10.4.2",
+		"@testing-library/user-event": "^14.6.10",
+		"@vitest/coverage-v8": "^5.1.0",
+		"@wordpress/eslint-plugin": "^28.1.0",
+		"@wordpress/prettier-config": "^5.1.0",
+		"eslint": "^10.14.0",
+		"globals": "^17.14.0",
+		"jsdom": "^31.0.0",
+		"prettier": "npm:wp-prettier@^3.9.6",
+		"vitest": "^5.1.0"
+	}
+}
