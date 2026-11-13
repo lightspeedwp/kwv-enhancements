@@ -5,6 +5,7 @@
 
 namespace KWV\Enhancements\Tests\Unit;
 
+use Brain\Monkey\Filters;
 use Brain\Monkey\Functions;
 use KWV\Enhancements\PayflexConfigurationCache;
 
@@ -126,5 +127,28 @@ final class PayflexConfigurationCacheTest extends TestCase {
 
 		$response = $this->response( 500 );
 		$this->assertSame( $response, $this->cache->store_in_cache( $response, array(), self::CONFIG_URL ) );
+	}
+
+	public function test_other_responses_pass_through_without_being_cached(): void {
+		Functions\expect( 'set_transient' )->never();
+
+		$response = $this->response( 200 );
+		$this->assertSame( $response, $this->cache->store_in_cache( $response, array( 'method' => 'GET' ), 'https://example.org/other' ) );
+	}
+
+	public function test_a_string_200_status_is_still_cached(): void {
+		Functions\expect( 'set_transient' )->once();
+
+		$response                     = $this->response( 200 );
+		$response['response']['code'] = '200';
+		$this->cache->store_in_cache( $response, array( 'method' => 'GET' ), self::CONFIG_URL );
+	}
+
+	public function test_register_passes_every_argument_to_both_filters(): void {
+		// Both callbacks need the URL, the third argument.
+		Filters\expectAdded( 'pre_http_request' )->once()->with( array( $this->cache, 'serve_from_cache' ), 10, 3 );
+		Filters\expectAdded( 'http_response' )->once()->with( array( $this->cache, 'store_in_cache' ), 10, 3 );
+
+		$this->cache->register();
 	}
 }

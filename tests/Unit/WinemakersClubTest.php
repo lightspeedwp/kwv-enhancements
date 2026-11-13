@@ -85,7 +85,8 @@ final class WinemakersClubTest extends TestCase {
 						&& array( 'wine-club-membership' ) === $args['category']
 						&& 'publish' === $args['status']
 						&& 'DESC' === $args['order']
-						&& 'ids' === $args['return'];
+						&& 'ids' === $args['return']
+						&& 1 === $args['limit'];
 				}
 			)
 		)->andReturn( array( 42 ) );
@@ -181,5 +182,30 @@ final class WinemakersClubTest extends TestCase {
 
 		$this->club->maybe_redirect_single_subscription();
 		$this->addToAssertionCount( 1 );
+	}
+
+	public function test_join_with_product_id_zero_never_looks_a_product_up(): void {
+		$_GET['kwv-join'] = '0';
+		Functions\expect( 'wc_get_product' )->never();
+
+		$redirect = $this->expectRedirectFrom( array( $this->club, 'maybe_handle_join' ) );
+
+		$this->assertSame( 'https://example.org/wineclub/', $redirect->location );
+	}
+
+	public function test_join_redirects_with_an_integer_product_id(): void {
+		$_GET['kwv-join'] = 'current';
+		Functions\when( 'wc_get_products' )->justReturn( array( '42' ) );
+		$added = null;
+		Functions\when( 'add_query_arg' )->alias(
+			static function ( $key, $value ) use ( &$added ) {
+				$added = $value;
+				return 'x';
+			}
+		);
+
+		$this->expectRedirectFrom( array( $this->club, 'maybe_handle_join' ) );
+
+		$this->assertSame( 42, $added );
 	}
 }

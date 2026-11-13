@@ -7,6 +7,7 @@ namespace KWV\Enhancements\Tests\Integration;
 
 use KWV\Enhancements\Careers;
 use KWV\Enhancements\CareersModal;
+use KWV\Enhancements\Tests\Support\Snapshots;
 
 /**
  * The careers listing modal: trigger tagging and the footer dialog.
@@ -14,6 +15,8 @@ use KWV\Enhancements\CareersModal;
  * @covers \KWV\Enhancements\CareersModal
  */
 final class CareersModalTest extends TestCase {
+
+	use Snapshots;
 
 	/** @var CareersModal */
 	private $modal;
@@ -167,5 +170,76 @@ final class CareersModalTest extends TestCase {
 
 		$this->assertSame( 1, substr_count( $html, 'data-kwv-career-form="' . $form_id . '"' ) );
 		$this->assertStringContainsString( 'data-kwv-job-input="input_5"', $html );
+	}
+
+	public function test_dialog_markup_matches_snapshot(): void {
+		$open   = $this->job(
+			array(
+				'kwv_career_reference'    => 'BMMS0128',
+				'kwv_career_location'     => 'Paarl',
+				'kwv_career_department'   => 'Production',
+				'kwv_career_closing_date' => '20991231',
+				Careers::LINKEDIN_META    => 'https://linkedin.com/j/1',
+			)
+		);
+		$closed = $this->job( array( 'kwv_career_closing_date' => '20200101' ) );
+		$this->read_more( $open );
+		$this->read_more( $closed );
+
+		$this->assertMatchesSnapshot(
+			$this->withStableIds(
+				$this->dialog(),
+				array(
+					'OPEN_JOB'   => $open,
+					'CLOSED_JOB' => $closed,
+				)
+			),
+			'careers-dialog.html'
+		);
+	}
+
+	public function test_modal_assets_point_at_the_plugin_files_and_defer(): void {
+		$this->read_more( $this->job() );
+
+		$this->assertSame( KWV_ENH_URL . 'assets/careers-modal.css', wp_styles()->registered['kwv-careers-modal']->src );
+		$this->assertSame( array( Careers::STYLE_HANDLE ), wp_styles()->registered['kwv-careers-modal']->deps );
+		$script = wp_scripts()->registered['kwv-careers-modal'];
+		$this->assertSame( KWV_ENH_URL . 'assets/careers-modal.js', $script->src );
+		$this->assertSame( 'defer', $script->extra['strategy'] ?? null );
+		$this->assertSame( 1, $script->extra['group'] ?? null, 'Loaded in the footer.' );
+	}
+
+	public function test_markup_without_a_link_loads_nothing_and_adds_no_dialog(): void {
+		$this->modal->tag_trigger( '<span>Read more</span>', array( 'blockName' => 'core/read-more' ), $this->instance( $this->job() ) );
+
+		$this->assertFalse( wp_script_is( 'kwv-careers-modal' ) );
+		$this->assertSame( '', $this->dialog() );
+	}
+
+	public function test_the_forms_own_scripts_are_queued_when_a_job_is_tagged(): void {
+		$this->requireGravityForms();
+		update_option(
+			Careers::FORM_OPTION,
+			(int) \GFAPI::add_form(
+				array(
+					'title'  => 'T',
+					'fields' => array(),
+				)
+			)
+		);
+
+		$this->read_more( $this->job() );
+
+		$this->assertTrue( wp_script_is( 'gform_gravityforms' ) || wp_script_is( 'gform_gravityforms_theme' ), 'Gravity Forms scripts are queued in the head.' );
+	}
+
+	public function test_nothing_is_tagged_in_wp_admin(): void {
+		set_current_screen( 'edit-page' );
+
+		try {
+			$this->assertStringNotContainsString( 'data-kwv-career-open', $this->read_more( $this->job() ) );
+		} finally {
+			set_current_screen( 'front' );
+		}
 	}
 }

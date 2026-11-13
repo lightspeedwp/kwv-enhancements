@@ -33,27 +33,80 @@ final class PostTypeModuleTest extends TestCase {
 		return $id;
 	}
 
-	public function test_post_types_are_public_and_in_rest(): void {
-		foreach ( array(
-			'kwv_career' => 'careers',
-			'kwv_event'  => 'events',
-		) as $type => $slug ) {
-			$object = get_post_type_object( $type );
+	/**
+	 * The post types are registered while the plugin loads; register them
+	 * again here so the arguments themselves are under test.
+	 *
+	 * @dataProvider post_types
+	 *
+	 * @param string $module Module class.
+	 * @param string $type   Post type.
+	 * @param string $slug   Rewrite slug.
+	 * @param string $name   Plural label.
+	 */
+	public function test_post_type_arguments( string $module, string $type, string $slug, string $name ): void {
+		unregister_post_type( $type );
+		( new $module() )->register_post_type();
 
-			$this->assertNotNull( $object, $type );
-			$this->assertTrue( $object->public, $type );
-			$this->assertTrue( $object->show_in_rest, $type );
-			$this->assertFalse( $object->has_archive, $type );
-			$this->assertSame( $slug, $object->rewrite['slug'], $type );
+		$object = get_post_type_object( $type );
+
+		$this->assertNotNull( $object, $type );
+		$this->assertTrue( $object->public );
+		$this->assertTrue( $object->show_in_rest );
+		$this->assertFalse( $object->has_archive );
+		$this->assertFalse( $object->hierarchical );
+		$this->assertSame( $slug, $object->rewrite['slug'] );
+		$this->assertFalse( $object->rewrite['with_front'] );
+		$this->assertSame( $name, $object->labels->name );
+		$this->assertSame( 'post', $object->capability_type );
+		foreach ( array( 'title', 'editor', 'thumbnail', 'excerpt', 'custom-fields', 'revisions' ) as $feature ) {
+			$this->assertTrue( post_type_supports( $type, $feature ), "{$type} supports {$feature}" );
 		}
 	}
 
-	public function test_event_brand_taxonomy_is_registered_for_events(): void {
+	public static function post_types(): array {
+		return array(
+			'careers' => array( Careers::class, 'kwv_career', 'careers', 'Careers' ),
+			'events'  => array( Events::class, 'kwv_event', 'events', 'Events' ),
+		);
+	}
+
+	public function test_admin_menu_positions_and_event_taxonomy(): void {
+		unregister_post_type( 'kwv_career' );
+		unregister_post_type( 'kwv_event' );
+		( new Careers() )->register_post_type();
+		( new Events() )->register_post_type();
+
+		$this->assertSame( 20, get_post_type_object( 'kwv_career' )->menu_position );
+		$this->assertSame( 21, get_post_type_object( 'kwv_event' )->menu_position );
+		$this->assertSame( array( Events::BRAND_TAXONOMY ), get_post_type_object( 'kwv_event' )->taxonomies );
+	}
+
+	public function test_default_brands_are_the_three_venues(): void {
+		$this->assertSame(
+			array(
+				'kwv-emporium'     => 'KWV Emporium',
+				'house-of-fire'    => 'House of Fire',
+				'cathedral-cellar' => 'Cathedral Cellar',
+			),
+			( new Events() )->default_brands()
+		);
+	}
+
+	public function test_event_brand_taxonomy_arguments(): void {
+		unregister_taxonomy( Events::BRAND_TAXONOMY );
+		( new Events() )->register_taxonomy();
+
 		$taxonomy = get_taxonomy( Events::BRAND_TAXONOMY );
 
 		$this->assertNotFalse( $taxonomy );
+		$this->assertTrue( $taxonomy->public );
 		$this->assertTrue( $taxonomy->hierarchical );
 		$this->assertTrue( $taxonomy->show_in_rest );
+		$this->assertTrue( $taxonomy->show_ui );
+		$this->assertTrue( $taxonomy->show_admin_column );
+		$this->assertSame( 'brand', $taxonomy->rewrite['slug'] );
+		$this->assertSame( 'Brands', $taxonomy->labels->name );
 		$this->assertSame( array( 'kwv_event' ), $taxonomy->object_type );
 	}
 
@@ -231,7 +284,7 @@ final class PostTypeModuleTest extends TestCase {
 			),
 			'slug'
 		);
-		$this->assertEqualSets( array_keys( $events->default_brands() ), $slugs );
+		$this->assertEqualSets( array( 'kwv-emporium', 'house-of-fire', 'cathedral-cellar' ), $slugs );
 		$this->assertEquals( 1, get_option( Events::BRANDS_SEEDED_OPTION ) );
 
 		// A brand deleted by an editor is not recreated.
@@ -242,10 +295,34 @@ final class PostTypeModuleTest extends TestCase {
 
 	public function test_activate_registers_everything_and_seeds(): void {
 		delete_option( Events::BRANDS_SEEDED_OPTION );
+		wp_clear_scheduled_hook( Events::EXPIRY_HOOK );
+		unregister_post_type( 'kwv_event' );
+		unregister_taxonomy( Events::BRAND_TAXONOMY );
 
 		( new Events() )->activate();
 
+		$this->assertTrue( post_type_exists( 'kwv_event' ) );
+		$this->assertTrue( taxonomy_exists( Events::BRAND_TAXONOMY ) );
 		$this->assertEquals( 1, get_option( Events::BRANDS_SEEDED_OPTION ) );
 		$this->assertNotFalse( wp_next_scheduled( Events::EXPIRY_HOOK ) );
+	}
+
+	public function test_careers_activation_registers_the_post_type_for_the_rewrite_flush(): void {
+		unregister_post_type( 'kwv_career' );
+		wp_clear_scheduled_hook( Careers::EXPIRY_HOOK );
+
+		( new Careers() )->activate();
+
+		$this->assertTrue( post_type_exists( 'kwv_career' ) );
+		$this->assertSame( 'hourly', wp_get_scheduled_event( Careers::EXPIRY_HOOK )->schedule );
+	}
+
+	public function test_scheduling_again_keeps_the_existing_hourly_event(): void {
+		wp_clear_scheduled_hook( Careers::EXPIRY_HOOK );
+		wp_schedule_event( 1000, 'hourly', Careers::EXPIRY_HOOK );
+
+		( new Careers() )->schedule_expiry();
+
+		$this->assertSame( 1000, wp_next_scheduled( Careers::EXPIRY_HOOK ), 'The existing event is not replaced.' );
 	}
 }

@@ -9,6 +9,7 @@ use Brain\Monkey\Functions;
 use KWV\Enhancements\ApplicationForm;
 use KWV\Enhancements\Careers;
 use KWV\Enhancements\EmailTemplate;
+use KWV\Enhancements\Tests\Support\Snapshots;
 
 /**
  * Provisioning and schema migration of the shared job-application form,
@@ -17,6 +18,8 @@ use KWV\Enhancements\EmailTemplate;
  * @covers \KWV\Enhancements\ApplicationForm
  */
 final class ApplicationFormTest extends TestCase {
+
+	use Snapshots;
 
 	/** @var ApplicationForm */
 	private $module;
@@ -58,6 +61,26 @@ final class ApplicationFormTest extends TestCase {
 			$fields[ $field['id'] ] = $field;
 		}
 		return $fields;
+	}
+
+	/**
+	 * The whole provisioned form — every field, both notification emails (full
+	 * HTML) and the confirmation — so any change to what applicants fill in or
+	 * what HR and applicants receive shows up as a reviewable diff.
+	 */
+	public function test_provisioned_form_matches_snapshot(): void {
+		$this->options['kwv_careers_hr_email'] = 'careers@example.org';
+		$this->module->maybe_install_form();
+
+		$form = $this->installedForm();
+
+		// Confirmation IDs come from uniqid(); pin them so the snapshot is stable.
+		$this->assertCount( 1, $form['confirmations'] );
+		$confirmation          = reset( $form['confirmations'] );
+		$confirmation['id']    = 'CONFIRMATION_ID';
+		$form['confirmations'] = array( 'CONFIRMATION_ID' => $confirmation );
+
+		$this->assertMatchesSnapshot( $form, 'careers-application-form.json' );
 	}
 
 	public function test_register_installs_after_gravity_forms_loads(): void {
@@ -275,5 +298,57 @@ final class ApplicationFormTest extends TestCase {
 		$this->module->maybe_install_form();
 
 		$this->assertArrayNotHasKey( ApplicationForm::SCHEMA_OPTION, $this->options );
+	}
+
+	public function test_a_form_with_id_one_is_not_reinstalled(): void {
+		\GFAPI::$forms[1]                                = array(
+			'id'     => 1,
+			'title'  => 'First form on the site',
+			'fields' => array(),
+		);
+		\GFAPI::$next_id                                 = 2;
+		$this->options[ Careers::FORM_OPTION ]           = 1;
+		$this->options[ ApplicationForm::SCHEMA_OPTION ] = ApplicationForm::SCHEMA_VERSION;
+
+		$this->module->maybe_install_form();
+
+		$this->assertSame( 2, \GFAPI::$next_id, 'No new form was added.' );
+		$this->assertSame( 1, $this->options[ Careers::FORM_OPTION ] );
+	}
+
+	public function test_an_installed_form_id_is_stored_as_an_integer(): void {
+		\GFAPI::$next_id = 9;
+
+		$this->module->maybe_install_form();
+
+		$this->assertSame( 9, $this->options[ Careers::FORM_OPTION ] );
+	}
+
+	/**
+	 * Only the bare schema-1 notification ("Admin Notification" sending
+	 * {all_fields}) is replaced. One an editor customised, or any other
+	 * notification that happens to send {all_fields}, is kept.
+	 */
+	public function test_migration_only_removes_the_untouched_schema_one_admin_notification(): void {
+		\GFAPI::$forms[7]                      = array(
+			'id'            => 7,
+			'fields'        => array(),
+			'notifications' => array(
+				'customised' => array(
+					'name'    => 'Admin Notification',
+					'message' => 'Edited by HR: {all_fields}',
+				),
+				'other'      => array(
+					'name'    => 'Copy to manager',
+					'message' => '{all_fields}',
+				),
+			),
+		);
+		$this->options[ Careers::FORM_OPTION ] = 7;
+
+		$this->module->maybe_install_form();
+
+		$this->assertArrayHasKey( 'customised', \GFAPI::$forms[7]['notifications'] );
+		$this->assertArrayHasKey( 'other', \GFAPI::$forms[7]['notifications'] );
 	}
 }

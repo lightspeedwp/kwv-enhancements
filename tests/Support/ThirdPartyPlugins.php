@@ -75,7 +75,16 @@ final class ThirdPartyPlugins {
 	 */
 	public function install(): void {
 
+		// A reused database (WP_TESTS_SKIP_INSTALL=1: separate-process tests and
+		// mutation testing) already has the tables from the run that created it.
+		if ( '1' === getenv( 'WP_TESTS_SKIP_INSTALL' ) ) {
+			return;
+		}
+
 		if ( class_exists( 'WC_Install' ) ) {
+			// A run killed mid-install leaves WooCommerce's lock behind, and
+			// the next install then fails on a duplicate key.
+			delete_option( 'wc_installing' );
 			\WC_Install::install();
 			// Reload roles so the capabilities WooCommerce just added are live.
 			$GLOBALS['wp_roles'] = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited

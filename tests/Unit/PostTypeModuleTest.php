@@ -125,6 +125,10 @@ final class PostTypeModuleTest extends TestCase {
 		$this->assertSame( 20261112, $clause[2]['value'] );
 		$this->assertSame( '>=', $clause[2]['compare'] );
 		$this->assertSame( 'NUMERIC', $clause[2]['type'] );
+		foreach ( array( 0, 1, 2 ) as $i ) {
+			$this->assertSame( 'kwv_career_closing_date', $clause[ $i ]['key'] ?? null, "Clause {$i} tests the closing date." );
+		}
+		$this->assertCount( 4, $clause );
 	}
 
 	public function test_exclude_expired_ands_with_an_existing_meta_query(): void {
@@ -204,5 +208,15 @@ final class PostTypeModuleTest extends TestCase {
 			'tomorrow'  => array( '20261113', false ),
 			'garbage'   => array( 'soon', false ),
 		);
+	}
+
+	public function test_exclude_expired_handles_a_post_type_array_with_any_keys(): void {
+		Functions\when( 'is_admin' )->justReturn( false );
+		Functions\when( 'current_time' )->justReturn( '20261112' );
+		$vars = array( 'post_type' => array( 3 => 'kwv_career' ) );
+
+		( new Careers() )->exclude_expired( $this->query( $vars ) );
+
+		$this->assertArrayHasKey( 'meta_query', $vars );
 	}
 }

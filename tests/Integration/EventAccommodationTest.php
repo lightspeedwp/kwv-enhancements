@@ -6,6 +6,7 @@
 namespace KWV\Enhancements\Tests\Integration;
 
 use KWV\Enhancements\EventAccommodation;
+use KWV\Enhancements\Tests\Support\Snapshots;
 
 /**
  * The "Accommodation nearby" repeater and its kwv/event-accommodation block.
@@ -13,6 +14,8 @@ use KWV\Enhancements\EventAccommodation;
  * @covers \KWV\Enhancements\EventAccommodation
  */
 final class EventAccommodationTest extends TestCase {
+
+	use Snapshots;
 
 	/** @var EventAccommodation */
 	private $module;
@@ -165,5 +168,32 @@ final class EventAccommodationTest extends TestCase {
 		$id = self::factory()->post->create( array( 'post_type' => 'kwv_event' ) );
 
 		$this->assertSame( '', $this->module->render( array(), '', new \WP_Block( array( 'blockName' => 'kwv/event-accommodation' ), array( 'postId' => $id ) ) ) );
+	}
+
+	public function test_block_markup_matches_snapshot(): void {
+		$image = $this->image();
+		$id    = $this->event(
+			array(
+				array(
+					'url'   => 'https://www.airbnb.co.za/rooms/1',
+					'title' => 'Cottage',
+					'image' => $image,
+				),
+				array(
+					'url'   => 'https://www.lekkeslaap.co.za/x',
+					'title' => 'Farm stay',
+				),
+			)
+		);
+
+		$html = ( new \WP_Block(
+			array(
+				'blockName' => 'kwv/event-accommodation',
+				'attrs'     => array(),
+			),
+			array( 'postId' => $id )
+		) )->render();
+
+		$this->assertMatchesSnapshot( $this->withStableIds( $html, array( 'IMAGE' => $image ) ), 'event-accommodation.html' );
 	}
 }

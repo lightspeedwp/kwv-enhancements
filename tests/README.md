@@ -64,6 +64,8 @@ composer test:coverage      # both suites with PCOV, merged; fails below 80% of 
 composer lint               # PHP syntax (parallel-lint) + WordPress Coding Standards
 composer analyse            # PHPStan, level 5, WordPress + WooCommerce stubs
 composer wpcs:fix           # auto-fix what phpcbf can
+composer test:mutation      # mutation testing, both suites (slow: minutes)
+composer test:snapshots:update   # rewrite golden files after an intended change
 ```
 
 Single test or class: `vendor/bin/phpunit --filter BrandsTest -c phpunit.integration.xml.dist`.
@@ -85,9 +87,40 @@ Things worth knowing:
 - `wp_is_serving_rest_request()` reads the `REST_REQUEST` constant, so editor-only output is tested in a separate process (`EditorPlaceholderTest`). The bootstrap skips the reinstall and silences third-party load notices in child processes.
 - Module code runs once when the plugin loads, before coverage starts. To measure a `register_*()` method, unregister and call it again inside the test (see `BlockBindingsTest`).
 
+## Snapshots (golden files)
+
+Some output is checked as a whole against a stored copy in `tests/__snapshots__/`:
+
+| Snapshot | What it pins |
+|---|---|
+| `careers-application-form.json` | The provisioned Gravity Form: every field, both notification emails (full HTML), the confirmation |
+| `email-with-logo.html`, `email-without-logo.html` | The branded email shell built from every `EmailTemplate` part |
+| `brand-awards.html`, `event-accommodation.html`, `careers-dialog.html` | The markup of the dynamic blocks and the careers modal |
+
+Any change to that output fails the test with a diff. If the change is intended, run `composer test:snapshots:update`, **review the diff in git**, and commit the updated files with the change. Run-specific values (post and attachment IDs, `uniqid()` confirmation IDs, `wp_unique_id()` counters) are replaced with placeholders such as `{OPEN_JOB}` before comparing. A missing snapshot is written on first run and the test is marked incomplete; on CI (`CI=true`) a missing snapshot fails.
+
+## Hook contract
+
+`tests/Support/PluginHooks.php` lists every hook the plugin adds, with its priority and accepted-argument count. Both suites assert it: the unit suite against Brain Monkey's record of `add_action()`/`add_filter()`, the integration suite against WordPress's own `$wp_filter` (plus a check that no callback requires more arguments than WordPress passes it). Adding, removing or re-wiring a hook means updating that table.
+
+## Mutation testing
+
+Line coverage says code ran; it doesn't say a test would notice if the code were wrong. [Infection](https://infection.github.io/) checks that: it makes small changes to `modules/` (flips `<` to `<=`, drops a call, negates a condition, changes a hook priority) and reruns the tests that cover the changed line. A change no test notices ("escaped mutant") points at a missing or weak assertion.
+
+```bash
+composer test:mutation:unit          # ~2 min; fails below 95% covered-code MSI
+composer test:mutation:integration   # longer; one throwaway database per thread
+```
+
+Reports go to `build/infection/` (`unit.log`, `integration.log`); each escaped mutant is listed with its diff.
+
+- The integration run uses one database per Infection thread (`kwv_enhancements_tests_t0` … `_t5`). Infection passes each process a `TEST_TOKEN`, `wp-tests-config.php` appends it to the database name, and `tests/bin/mutation-databases.php` creates and installs them first. Mutant runs then set `WP_TESTS_SKIP_INSTALL=1` and reuse them.
+- Expect a few survivors that can't be killed, because the mutated code behaves identically: mostly removed `(int)`/`(string)` casts, which PHP's type coercion makes harmless. Visibility mutators are disabled for the same reason.
+- When you add a module, run `composer test:mutation:unit` and read any escaped mutants in its file before merging.
+
 ## CI
 
-`.github/workflows/php-tests.yml` runs on pull requests to `develop`, `master` and `main`: lint, PHPStan, and `composer test:coverage` against a MySQL 8 service container, with WooCommerce and SCF downloaded from wordpress.org at the versions the site runs. Actions are pinned to commit SHAs; no secrets are used. The coverage HTML is uploaded as a build artifact.
+`.github/workflows/php-tests.yml` runs on pull requests to `develop`, `master` and `main`: lint, PHPStan, `composer test:coverage`, and unit mutation testing (`composer test:mutation:unit`, 95% floor) against a MySQL 8 service container, with WooCommerce and SCF downloaded from wordpress.org at the versions the site runs. Actions are pinned to commit SHAs; no secrets are used. The coverage HTML is uploaded as a build artifact.
 
 ## Known pre-existing findings
 

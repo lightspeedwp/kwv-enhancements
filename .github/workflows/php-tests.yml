@@ -107,3 +107,18 @@ jobs:
           name: coverage-html
           path: build/coverage/html
           if-no-files-found: ignore
+
+  mutation:
+    name: Mutation testing (unit suite)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          coverage: pcov
+          ini-values: pcov.enabled=0
+          tools: composer:v2
+      - run: composer install --no-interaction --no-progress
+      - name: Infection (fails below 95% covered-code MSI)
+        run: composer test:mutation:unit -- --threads=max --logger-github

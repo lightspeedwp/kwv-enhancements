@@ -8,6 +8,7 @@
 	},
 	"require-dev": {
 		"brain/monkey": "^2.7",
+		"infection/infection": "^0.32.6",
 		"mockery/mockery": "^1.6",
 		"php-parallel-lint/php-parallel-lint": "^1.4",
 		"php-stubs/woocommerce-stubs": "^10.9",
@@ -34,8 +35,10 @@
 		"allow-plugins": {
 			"dealerdirect/phpcodesniffer-composer-installer": true,
 			"phpstan/extension-installer": true,
-			"roots/wordpress-core-installer": false
-		}
+			"roots/wordpress-core-installer": false,
+			"infection/extension-installer": false
+		},
+		"process-timeout": 0
 	},
 	"scripts": {
 		"test": [
@@ -58,7 +61,21 @@
 		"lint:syntax": "parallel-lint --exclude vendor --exclude build .",
 		"wpcs:scan": "phpcs",
 		"wpcs:fix": "phpcbf",
-		"analyse": "phpstan analyse --memory-limit=1G"
+		"analyse": "phpstan analyse --memory-limit=1G",
+		"test:mutation": [
+			"@test:mutation:unit",
+			"@test:mutation:integration"
+		],
+		"test:mutation:unit": "infection --only-covering-test-cases --min-covered-msi=95 --no-progress",
+		"test:mutation:integration": [
+			"@php tests/bin/mutation-databases.php 6",
+			"@putenv WP_TESTS_SKIP_INSTALL=1",
+			"infection --configuration=infection.integration.json5 --only-covering-test-cases --no-progress"
+		],
+		"test:snapshots:update": [
+			"@putenv UPDATE_SNAPSHOTS=1",
+			"@test"
+		]
 	},
 	"scripts-descriptions": {
 		"test": "Run the unit suite, then the integration suite.",
@@ -66,6 +83,10 @@
 		"test:integration": "Run the integration suite against a throwaway WordPress test database.",
 		"test:coverage": "Run both suites with PCOV, merge the coverage and fail below 80% of lines in modules/.",
 		"lint": "PHP syntax check plus WordPress Coding Standards.",
-		"analyse": "PHPStan static analysis (WordPress + WooCommerce stubs)."
+		"analyse": "PHPStan static analysis (WordPress + WooCommerce stubs).",
+		"test:mutation": "Mutation testing (Infection) against both suites. Slow; run before merging a change to modules/.",
+		"test:mutation:unit": "Mutation testing against the unit suite; fails below 95% covered-code MSI.",
+		"test:mutation:integration": "Mutation testing against the integration suite (one test database per thread).",
+		"test:snapshots:update": "Rewrite tests/__snapshots__ after an intended output change; review the diff before committing."
 	}
 }

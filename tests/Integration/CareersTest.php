@@ -179,4 +179,113 @@ final class CareersTest extends TestCase {
 		$this->assertSame( (string) filemtime( KWV_ENH_DIR . 'assets/careers-form.css' ), Careers::asset_version( 'assets/careers-form.css' ) );
 		$this->assertSame( KWV_ENH_VERSION, Careers::asset_version( 'assets/missing.css' ) );
 	}
+
+	public function test_shortcode_without_an_id_uses_the_job_being_viewed(): void {
+		delete_option( Careers::FORM_OPTION );
+		$open = $this->job( array( Careers::LINKEDIN_META => 'https://linkedin.com/j/1' ) );
+		$this->go_to( get_permalink( $open ) );
+
+		$html = do_shortcode( '[kwv_career_form]' );
+
+		$this->assertStringNotContainsString( 'have closed', $html );
+		$this->assertStringContainsString( 'kwv-career-easy-apply', $html );
+	}
+
+	public function test_shortcode_with_an_explicit_id_ignores_the_page(): void {
+		$closed = $this->job( array( 'kwv_career_closing_date' => $this->ymd( -1 ) ) );
+		$this->go_to( get_permalink( $this->job() ) );
+
+		$this->assertStringContainsString( 'have closed', do_shortcode( '[kwv_career_form id="' . $closed . '"]' ) );
+	}
+
+	public function test_easy_apply_comes_before_the_form(): void {
+		$this->requireGravityForms();
+		update_option(
+			Careers::FORM_OPTION,
+			(int) \GFAPI::add_form(
+				array(
+					'title'  => 'T',
+					'fields' => array(),
+				)
+			)
+		);
+
+		$html = $this->careers->apply_panel_html( $this->job( array( Careers::LINKEDIN_META => 'https://linkedin.com/j/1' ) ) );
+
+		$this->assertLessThan( strpos( $html, 'gform_wrapper' ), strpos( $html, 'kwv-career-easy-apply' ) );
+	}
+
+	public function test_asset_version_resolves_paths_from_the_plugin_folder(): void {
+		$cwd = getcwd();
+		chdir( sys_get_temp_dir() );
+
+		try {
+			$this->assertSame( (string) filemtime( KWV_ENH_DIR . 'assets/careers-form.css' ), Careers::asset_version( 'assets/careers-form.css' ) );
+		} finally {
+			chdir( $cwd );
+		}
+	}
+
+	public function test_form_style_points_at_the_plugin_stylesheet(): void {
+		$GLOBALS['wp_styles'] = null;
+		$this->careers->enqueue_styles();
+
+		$this->assertSame( KWV_ENH_URL . 'assets/careers-form.css', wp_styles()->registered[ Careers::STYLE_HANDLE ]->src );
+	}
+
+	public function test_shortcode_prefers_the_loop_post_over_the_queried_page(): void {
+		delete_option( Careers::FORM_OPTION );
+		$closed = $this->job( array( 'kwv_career_closing_date' => $this->ymd( -1 ) ) );
+		$open   = $this->job();
+		$this->go_to( get_permalink( $closed ) );
+
+		// A query loop on the page sets up each job as the current post.
+		$GLOBALS['post'] = get_post( $open );
+		setup_postdata( $GLOBALS['post'] );
+
+		$this->assertStringNotContainsString( 'have closed', do_shortcode( '[kwv_career_form]' ) );
+	}
+
+	public function test_form_is_rendered_without_its_title_or_description(): void {
+		$this->requireGravityForms();
+		$form_id = (int) \GFAPI::add_form(
+			array(
+				'title'       => 'Unique Form Title 123',
+				'description' => 'Unique form description 456',
+				'fields'      => array(),
+			)
+		);
+
+		$html = $this->careers->form_html( $form_id );
+
+		$this->assertStringContainsString( 'gform_wrapper', $html );
+		$this->assertStringNotContainsString( 'Unique Form Title 123', $html );
+		$this->assertStringNotContainsString( 'Unique form description 456', $html );
+	}
+
+	/**
+	 * On the job page the form posts normally and doesn't set tab order; the
+	 * modal asks for AJAX explicitly.
+	 */
+	public function test_form_defaults_to_a_normal_post_without_tabindex(): void {
+		$this->requireGravityForms();
+		$form_id = (int) \GFAPI::add_form(
+			array(
+				'title'  => 'T',
+				'fields' => array(
+					array(
+						'id'    => 1,
+						'type'  => 'text',
+						'label' => 'Name',
+					),
+				),
+			)
+		);
+
+		$page  = $this->careers->form_html( $form_id );
+		$modal = $this->careers->form_html( $form_id, true );
+
+		$this->assertStringNotContainsString( 'tabindex', $page );
+		$this->assertGreaterThan( substr_count( $page, 'gform_ajax' ), substr_count( $modal, 'gform_ajax' ), 'Only the modal form submits over AJAX.' );
+	}
 }

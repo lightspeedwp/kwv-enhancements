@@ -161,6 +161,8 @@ final class BookingFormTest extends TestCase {
 		$this->assertSame( $logic, $form['fields'][2]->conditionalLogic );
 		$this->assertSame( $logic, $form['fields'][3]->conditionalLogic );
 		$this->assertObjectNotHasProperty( 'conditionalLogic', $form['fields'][0] );
+		$this->assertSame( 'show', $logic['actionType'] );
+		$this->assertSame( 'all', $logic['logicType'] );
 		$this->assertSame(
 			array(
 				'fieldId'  => 2,

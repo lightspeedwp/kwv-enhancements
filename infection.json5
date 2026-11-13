@@ -1,0 +1,26 @@
+{
+	// Mutation testing: `composer test:mutation`. See tests/README.md.
+	"$schema": "vendor/infection/infection/resources/schema.json",
+	// Lets Infection itself load the plugin classes (it reflects on them).
+	"bootstrap": "tests/Unit/bootstrap.php",
+	"source": {
+		"directories": ["modules"]
+	},
+	"timeout": 60,
+	"threads": "max",
+	"tmpDir": "build/infection-tmp",
+	"logs": {
+		"text": "build/infection/unit.log",
+		"summary": "build/infection/unit-summary.log"
+	},
+	"phpUnit": {
+		"configDir": "."
+	},
+	"initialTestsPhpOptions": "-d pcov.enabled=1",
+	"mutators": {
+		"@default": true,
+		// Narrowing a method's visibility can't be observed by a test that
+		// calls the public API; these mutants are noise.
+		"@function_signature": false
+	}
+}

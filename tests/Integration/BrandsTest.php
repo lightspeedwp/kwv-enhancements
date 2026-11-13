@@ -6,6 +6,7 @@
 namespace KWV\Enhancements\Tests\Integration;
 
 use KWV\Enhancements\Brands;
+use KWV\Enhancements\Tests\Support\Snapshots;
 
 /**
  * Brand page content: the kwv/brand source, the empty-field render filter and
@@ -14,6 +15,8 @@ use KWV\Enhancements\Brands;
  * @covers \KWV\Enhancements\Brands
  */
 final class BrandsTest extends TestCase {
+
+	use Snapshots;
 
 	/** @var Brands */
 	private $brands;
@@ -254,5 +257,67 @@ final class BrandsTest extends TestCase {
 		$this->view_brand();
 
 		$this->assertSame( '', trim( do_blocks( '<!-- wp:kwv/brand-awards /-->' ) ) );
+	}
+
+	public function test_awards_block_markup_matches_snapshot(): void {
+		$first  = $this->image( 'a.jpg', 'Gold medal' );
+		$second = $this->image( 'b.jpg' );
+		$this->meta( 'awards', array( $first, $second ) );
+		$this->view_brand();
+
+		$this->assertMatchesSnapshot(
+			$this->withStableIds(
+				do_blocks( '<!-- wp:kwv/brand-awards /-->' ),
+				array(
+					'AWARD_1' => $first,
+					'AWARD_2' => $second,
+				)
+			),
+			'brand-awards.html'
+		);
+	}
+
+	public function test_allow_social_link_url_returns_a_list(): void {
+		$this->assertSame( array( 'rel', 'url' ), $this->brands->allow_social_link_url( array( 'rel', 'rel', 'url' ) ) );
+	}
+
+	public function test_every_kwv_brand_binding_on_a_block_is_checked(): void {
+		$this->meta( 'website', 'https://laborie.co.za' );
+		$this->view_brand();
+		$block = array(
+			'attrs' => array(
+				'metadata' => array(
+					'bindings' => array(
+						'text' => array( 'source' => 'core/post-meta' ),
+						'url'  => array(
+							'source' => Brands::SOURCE,
+							'args'   => array( 'key' => 'website' ),
+						),
+						'rel'  => array(
+							'source' => Brands::SOURCE,
+							'args'   => array( 'key' => 'facebook' ),
+						),
+					),
+				),
+			),
+		);
+
+		$this->assertSame( '', $this->brands->hide_blocks_bound_to_empty_fields( '<a>x</a>', $block ), 'A blank field later in the list still hides the block.' );
+	}
+
+	public function test_awards_block_registers_from_the_plugin_folder_with_its_renderer(): void {
+		$this->meta( 'awards', array( $this->image() ) );
+		unregister_block_type( 'kwv/brand-awards' );
+		$cwd = getcwd();
+		chdir( sys_get_temp_dir() );
+
+		try {
+			$this->brands->register_block();
+		} finally {
+			chdir( $cwd );
+		}
+
+		$this->view_brand();
+		$this->assertStringContainsString( 'kwv-brand-awards__item', do_blocks( '<!-- wp:kwv/brand-awards /-->' ) );
 	}
 }

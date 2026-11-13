@@ -172,6 +172,19 @@ final class ApplicationContextTest extends TestCase {
 		);
 	}
 
+	public function test_forms_with_no_fields_at_all_are_ignored(): void {
+		$this->careers->shouldNotReceive( 'is_open' );
+
+		$result = $this->context->validate(
+			array(
+				'is_valid' => true,
+				'form'     => array( 'id' => 9 ),
+			)
+		);
+
+		$this->assertTrue( $result['is_valid'] );
+	}
+
 	public function test_forms_without_a_job_field_are_ignored(): void {
 		$this->careers->shouldNotReceive( 'is_open' );
 		$form = array( 'fields' => array( kwv_test_gf_field( array( 'id' => 1 ) ) ) );
@@ -270,5 +283,18 @@ final class ApplicationContextTest extends TestCase {
 		);
 
 		$this->assertSame( $email, $this->context->tidy_hr_email( $email, 'text', array( 'id' => ApplicationForm::USER_NOTIFICATION ) ) );
+	}
+
+	public function test_hr_subject_is_trimmed(): void {
+		$tidied = $this->context->tidy_hr_email(
+			array(
+				'subject' => '  Job application: X (Ref ) — Y  ',
+				'message' => 'x',
+			),
+			'html',
+			array( 'id' => ApplicationForm::HR_NOTIFICATION )
+		);
+
+		$this->assertSame( 'Job application: X — Y', $tidied['subject'] );
 	}
 }

@@ -8,11 +8,14 @@ namespace KWV\Enhancements\Tests\Unit;
 use Brain\Monkey\Filters;
 use Brain\Monkey\Functions;
 use KWV\Enhancements\EmailTemplate;
+use KWV\Enhancements\Tests\Support\Snapshots;
 
 /**
  * @covers \KWV\Enhancements\EmailTemplate
  */
 final class EmailTemplateTest extends TestCase {
+
+	use Snapshots;
 
 	/** @var EmailTemplate */
 	private $email;
@@ -78,5 +81,38 @@ final class EmailTemplateTest extends TestCase {
 
 		$this->assertStringContainsString( 'href="https://example.org/?a=1&b=2"', $html );
 		$this->assertStringContainsString( '>View &lt;entry&gt;</a>', $html );
+	}
+
+	/**
+	 * A complete email built from every part, with and without the logo
+	 * image, so any change to the branded shell shows up as a diff.
+	 *
+	 * @dataProvider logos
+	 *
+	 * @param string|false $logo_url The logo attachment's URL.
+	 * @param string       $name     Snapshot name.
+	 */
+	public function test_full_email_matches_snapshot( $logo_url, string $name ): void {
+		Functions\when( 'wp_get_attachment_url' )->justReturn( $logo_url );
+
+		$body = $this->email->heading( 'Thank you for applying' )
+			. $this->email->paragraph( 'We have received your application.' )
+			. $this->email->details(
+				array(
+					'Position' => '{Job Title:15}',
+					'Location' => '{Location:19}',
+				),
+				array( 'Location' => '{Location:19}' )
+			)
+			. $this->email->button( 'View current vacancies', 'https://example.org/careers/' );
+
+		$this->assertMatchesSnapshot( $this->email->document( 'Your application', $body, 'You are receiving this because you applied.' ), $name );
+	}
+
+	public static function logos(): array {
+		return array(
+			'with logo'    => array( 'https://example.org/logo.png', 'email-with-logo.html' ),
+			'without logo' => array( false, 'email-without-logo.html' ),
+		);
 	}
 }

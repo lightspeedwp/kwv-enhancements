@@ -32,7 +32,11 @@ define( 'WP_CONTENT_DIR', $kwv_root . '/build/wp-content' );
 // loaded from an existing plugins folder, never committed to this repository.
 define( 'WP_PLUGIN_DIR', rtrim( $kwv_env( 'KWV_WP_PLUGINS_DIR', dirname( $kwv_root ) ), '/' ) );
 
-define( 'DB_NAME', $kwv_env( 'WP_TESTS_DB_NAME', 'kwv_enhancements_tests' ) );
+// Mutation testing runs several test processes at once; Infection gives each
+// a TEST_TOKEN, and each gets its own database (tests/bin/mutation-databases.php)
+// so parallel runs never share tables.
+$kwv_token = getenv( 'TEST_TOKEN' );
+define( 'DB_NAME', $kwv_env( 'WP_TESTS_DB_NAME', 'kwv_enhancements_tests' ) . ( false === $kwv_token || '' === $kwv_token ? '' : '_t' . $kwv_token ) );
 define( 'DB_USER', $kwv_env( 'WP_TESTS_DB_USER', 'root' ) );
 define( 'DB_PASSWORD', $kwv_env( 'WP_TESTS_DB_PASSWORD', '' ) );
 define( 'DB_HOST', $kwv_env( 'WP_TESTS_DB_HOST', '127.0.0.1' ) );
@@ -49,6 +53,10 @@ define( 'WPLANG', '' );
 define( 'WP_DEBUG', true );
 define( 'WP_ENVIRONMENT_TYPE', 'local' );
 
+// Tests never touch the network: third-party plugins phone home while loading
+// (licence and update checks), which made every bootstrap slow and flaky.
+define( 'WP_HTTP_BLOCK_EXTERNAL', true );
+
 define( 'AUTH_KEY', 'kwv-tests' );
 define( 'SECURE_AUTH_KEY', 'kwv-tests' );
 define( 'LOGGED_IN_KEY', 'kwv-tests' );
@@ -58,4 +66,4 @@ define( 'SECURE_AUTH_SALT', 'kwv-tests' );
 define( 'LOGGED_IN_SALT', 'kwv-tests' );
 define( 'NONCE_SALT', 'kwv-tests' );
 
-unset( $kwv_env, $kwv_root );
+unset( $kwv_env, $kwv_root, $kwv_token );
