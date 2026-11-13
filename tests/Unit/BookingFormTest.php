@@ -254,6 +254,7 @@ final class BookingFormTest extends TestCase {
 				return 'kwv_event_date' === $key ? $date : $time;
 			}
 		);
+		Functions\when( 'wp_timezone' )->justReturn( new \DateTimeZone( 'UTC' ) );
 		Functions\when( 'wp_date' )->alias(
 			static function ( $format, $timestamp ) {
 				return gmdate( $format, $timestamp );
@@ -261,6 +262,33 @@ final class BookingFormTest extends TestCase {
 		);
 
 		$this->assertSame( $expected, ( new BookingForm() )->choice_label( 10 ) );
+	}
+
+	/**
+	 * The stored Ymd date is a calendar day in the site's timezone: it must be
+	 * read as local midnight, not the current UTC time of day, or after 22:00
+	 * UTC a South African site labels the event with the next day's date.
+	 */
+	public function test_choice_label_reads_the_date_as_local_midnight(): void {
+		$stamps = array();
+
+		Functions\when( 'get_the_title' )->justReturn( 'Jazz Night' );
+		Functions\when( 'get_bloginfo' )->justReturn( 'UTF-8' );
+		Functions\when( 'get_post_meta' )->alias(
+			static function ( $id, $key ) {
+				return 'kwv_event_date' === $key ? '20261215' : '';
+			}
+		);
+		Functions\when( 'wp_timezone' )->justReturn( new \DateTimeZone( 'Africa/Johannesburg' ) );
+		Functions\when( 'wp_date' )->alias(
+			static function ( $format, $timestamp ) use ( &$stamps ) {
+				$stamps[] = $timestamp;
+				return ( new \DateTime( '@' . $timestamp ) )->setTimezone( new \DateTimeZone( 'Africa/Johannesburg' ) )->format( $format );
+			}
+		);
+
+		$this->assertSame( 'Jazz Night — 15 Dec 2026', ( new BookingForm() )->choice_label( 10 ) );
+		$this->assertSame( array( strtotime( '2026-12-15 00:00:00 +02:00' ) ), $stamps );
 	}
 
 	public static function labels(): array {

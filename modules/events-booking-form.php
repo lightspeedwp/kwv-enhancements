@@ -187,7 +187,9 @@ class BookingForm implements Module {
 		$when = '';
 
 		if ( '' !== $raw_date ) {
-			$date = \DateTime::createFromFormat( 'Ymd', $raw_date );
+			// `!` = local midnight; without it the parse takes the current UTC time
+			// of day and can roll into the next day in the site's timezone.
+			$date = \DateTime::createFromFormat( '!Ymd', $raw_date, wp_timezone() );
 			$when = $date ? wp_date( 'j M Y', $date->getTimestamp() ) : $raw_date;
 		}
 
