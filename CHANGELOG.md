@@ -9,6 +9,25 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 
+- **Brands — brand page content** (`modules/brands.php`, `acf-json/group_kwv_brands.json`,
+  `blocks/brand-awards/`). Client change request (Estimate 3439, "KWV - Brand page redesign").
+  - New **Brand Page Content** field group on every Brand (Products → Brands): *Brand logo*,
+    *Brand introduction*, *Awards & accolades* (gallery, up to 8 images), *Brand website link* and
+    six social links (Facebook, Instagram, X, YouTube, TikTok, LinkedIn). All optional. Values are
+    plain term meta (`kwv_brand_{logo|intro|awards|website|facebook|…}`).
+  - New block-binding source **`kwv/brand`** (`args.key`): `name` and `intro` for a paragraph or
+    heading, `logo` for an image (`url`, `alt`, `id`), and `website` or a platform for a button or
+    social icon `url`. Outside a brand page it returns null, so the block keeps its saved
+    placeholder. `core/social-link` gains a bindable `url`.
+  - A block bound to an empty brand field renders nothing (`render_block` filter), so blank fields
+    are hidden. Links must be http(s).
+  - New dynamic block **`kwv/brand-awards`**: the brand's award images in a centred row, as core
+    block markup through `do_blocks()`; nothing when the brand has none. An image's Alt Text is its
+    accessible name.
+
+  The theme places these on the brand template (kwv-theme-2026, same branch name).
+  How it all fits together (plugin and theme), deploy checklist and troubleshooting:
+  `docs/brand-pages.md`.
 - **Events — "Accommodation nearby"** (`modules/event-accommodation.php`, `blocks/event-accommodation/`).
   Client change request (quoted and approved separately). Larger events can list places to stay
   from Booking.com, Airbnb, LekkeSlaap or any other site:

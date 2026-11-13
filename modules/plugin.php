@@ -63,6 +63,7 @@ final class Plugin {
 			new Events(),
 			new BookingForm(),
 			new EventAccommodation(),
+			new Brands(),
 			new WinemakersClub(),
 			new PayflexConfigurationCache(),
 		);

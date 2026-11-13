@@ -1,0 +1,217 @@
+{
+	"key": "group_kwv_brands",
+	"title": "Brand Page Content",
+	"fields": [
+		{
+			"key": "field_kwv_brand_logo",
+			"label": "Brand logo",
+			"name": "kwv_brand_logo",
+			"aria-label": "",
+			"type": "image",
+			"instructions": "Optional. Shown above the introduction on the brand page. Use a transparent PNG, SVG or WebP. Leave empty to show no logo.",
+			"required": 0,
+			"conditional_logic": 0,
+			"wrapper": {
+				"width": "",
+				"class": "",
+				"id": ""
+			},
+			"return_format": "id",
+			"library": "all",
+			"min_width": "",
+			"min_height": "",
+			"min_size": "",
+			"max_width": "",
+			"max_height": "",
+			"max_size": "",
+			"mime_types": "",
+			"preview_size": "medium"
+		},
+		{
+			"key": "field_kwv_brand_intro",
+			"label": "Brand introduction",
+			"name": "kwv_brand_intro",
+			"aria-label": "",
+			"type": "textarea",
+			"instructions": "Optional. A short introduction shown under the banner on the brand page. Leave empty to show no introduction.",
+			"required": 0,
+			"conditional_logic": 0,
+			"wrapper": {
+				"width": "",
+				"class": "",
+				"id": ""
+			},
+			"default_value": "",
+			"maxlength": "",
+			"rows": 5,
+			"placeholder": "",
+			"new_lines": ""
+		},
+		{
+			"key": "field_kwv_brand_awards",
+			"label": "Awards & accolades",
+			"name": "kwv_brand_awards",
+			"aria-label": "",
+			"type": "gallery",
+			"instructions": "Optional. Up to 8 award or medal images, shown in a row under the introduction in the order set here. Add a short description of each award as the image's Alt Text in the media library. Leave empty to show no awards.",
+			"required": 0,
+			"conditional_logic": 0,
+			"wrapper": {
+				"width": "",
+				"class": "",
+				"id": ""
+			},
+			"return_format": "id",
+			"library": "all",
+			"min": "",
+			"max": 8,
+			"min_width": "",
+			"min_height": "",
+			"min_size": "",
+			"max_width": "",
+			"max_height": "",
+			"max_size": "",
+			"mime_types": "",
+			"insert": "append",
+			"preview_size": "thumbnail"
+		},
+		{
+			"key": "field_kwv_brand_website",
+			"label": "Brand website link",
+			"name": "kwv_brand_website",
+			"aria-label": "",
+			"type": "url",
+			"instructions": "Optional. The full address of the brand's own website, e.g. https://www.example.com. Shown as a \"Visit brand website\" link that opens in a new tab.",
+			"required": 0,
+			"conditional_logic": 0,
+			"wrapper": {
+				"width": "",
+				"class": "",
+				"id": ""
+			},
+			"default_value": "",
+			"placeholder": "https://"
+		},
+		{
+			"key": "field_kwv_brand_facebook",
+			"label": "Facebook link",
+			"name": "kwv_brand_facebook",
+			"aria-label": "",
+			"type": "url",
+			"instructions": "Optional. The full address of the brand's Facebook page. Leave empty to hide the Facebook icon.",
+			"required": 0,
+			"conditional_logic": 0,
+			"wrapper": {
+				"width": "50",
+				"class": "",
+				"id": ""
+			},
+			"default_value": "",
+			"placeholder": "https://"
+		},
+		{
+			"key": "field_kwv_brand_instagram",
+			"label": "Instagram link",
+			"name": "kwv_brand_instagram",
+			"aria-label": "",
+			"type": "url",
+			"instructions": "Optional. The full address of the brand's Instagram page. Leave empty to hide the Instagram icon.",
+			"required": 0,
+			"conditional_logic": 0,
+			"wrapper": {
+				"width": "50",
+				"class": "",
+				"id": ""
+			},
+			"default_value": "",
+			"placeholder": "https://"
+		},
+		{
+			"key": "field_kwv_brand_x",
+			"label": "X link",
+			"name": "kwv_brand_x",
+			"aria-label": "",
+			"type": "url",
+			"instructions": "Optional. The full address of the brand's X page. Leave empty to hide the X icon.",
+			"required": 0,
+			"conditional_logic": 0,
+			"wrapper": {
+				"width": "50",
+				"class": "",
+				"id": ""
+			},
+			"default_value": "",
+			"placeholder": "https://"
+		},
+		{
+			"key": "field_kwv_brand_youtube",
+			"label": "YouTube link",
+			"name": "kwv_brand_youtube",
+			"aria-label": "",
+			"type": "url",
+			"instructions": "Optional. The full address of the brand's YouTube page. Leave empty to hide the YouTube icon.",
+			"required": 0,
+			"conditional_logic": 0,
+			"wrapper": {
+				"width": "50",
+				"class": "",
+				"id": ""
+			},
+			"default_value": "",
+			"placeholder": "https://"
+		},
+		{
+			"key": "field_kwv_brand_tiktok",
+			"label": "TikTok link",
+			"name": "kwv_brand_tiktok",
+			"aria-label": "",
+			"type": "url",
+			"instructions": "Optional. The full address of the brand's TikTok page. Leave empty to hide the TikTok icon.",
+			"required": 0,
+			"conditional_logic": 0,
+			"wrapper": {
+				"width": "50",
+				"class": "",
+				"id": ""
+			},
+			"default_value": "",
+			"placeholder": "https://"
+		},
+		{
+			"key": "field_kwv_brand_linkedin",
+			"label": "LinkedIn link",
+			"name": "kwv_brand_linkedin",
+			"aria-label": "",
+			"type": "url",
+			"instructions": "Optional. The full address of the brand's LinkedIn page. Leave empty to hide the LinkedIn icon.",
+			"required": 0,
+			"conditional_logic": 0,
+			"wrapper": {
+				"width": "50",
+				"class": "",
+				"id": ""
+			},
+			"default_value": "",
+			"placeholder": "https://"
+		}
+	],
+	"location": [
+		[
+			{
+				"param": "taxonomy",
+				"operator": "==",
+				"value": "product_brand"
+			}
+		]
+	],
+	"menu_order": 0,
+	"position": "normal",
+	"style": "default",
+	"label_placement": "top",
+	"instruction_placement": "label",
+	"hide_on_screen": "",
+	"active": true,
+	"description": "Content for the brand pages (/brand/…): logo, introduction, awards, website and social links. Managed as code in the KWV Enhancements plugin's /acf-json directory.",
+	"show_in_rest": 0,
+	"modified": 1794467762
+}

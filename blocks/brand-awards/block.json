@@ -1,0 +1,20 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "kwv/brand-awards",
+	"version": "1.0.0",
+	"title": "Brand Awards",
+	"category": "theme",
+	"icon": "awards",
+	"description": "The awards and accolades row for the current brand, from the brand's Awards & accolades field. Renders nothing when the brand has none.",
+	"keywords": [ "awards", "accolades", "medals", "brand" ],
+	"textdomain": "kwv-enhancements",
+	"supports": {
+		"html": false,
+		"align": [ "wide", "full" ],
+		"spacing": {
+			"margin": true
+		}
+	},
+	"editorScript": "file:./index.js"
+}
