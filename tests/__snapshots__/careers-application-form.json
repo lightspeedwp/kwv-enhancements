@@ -1,0 +1,166 @@
+{
+    "labelPlacement": "top_label",
+    "descriptionPlacement": "below",
+    "cssClass": "kwv-career-form",
+    "button": {
+        "type": "text",
+        "text": "Submit application"
+    },
+    "title": "KWV Job Application",
+    "description": "",
+    "fields": [
+        {
+            "id": 2,
+            "type": "text",
+            "label": "Name",
+            "isRequired": true,
+            "autocompleteAttribute": "given-name",
+            "enableAutocomplete": true,
+            "layoutGridColumnSpan": 6,
+            "layoutGroupId": "kwvname"
+        },
+        {
+            "id": 3,
+            "type": "text",
+            "label": "Surname",
+            "isRequired": true,
+            "autocompleteAttribute": "family-name",
+            "enableAutocomplete": true,
+            "layoutGridColumnSpan": 6,
+            "layoutGroupId": "kwvname"
+        },
+        {
+            "id": 1,
+            "type": "email",
+            "label": "Email",
+            "isRequired": true,
+            "autocompleteAttribute": "email",
+            "enableAutocomplete": true,
+            "layoutGridColumnSpan": 6,
+            "layoutGroupId": "kwvcontact"
+        },
+        {
+            "id": 10,
+            "type": "phone",
+            "label": "Phone",
+            "isRequired": true,
+            "phoneFormat": "international",
+            "autocompleteAttribute": "tel",
+            "enableAutocomplete": true,
+            "layoutGridColumnSpan": 6,
+            "layoutGroupId": "kwvcontact"
+        },
+        {
+            "id": 11,
+            "type": "fileupload",
+            "label": "CV",
+            "isRequired": true,
+            "allowedExtensions": "pdf,doc,docx",
+            "maxFileSize": 5,
+            "multipleFiles": false
+        },
+        {
+            "id": 17,
+            "type": "hidden",
+            "label": "Job ID",
+            "defaultValue": "{embed_post:ID}",
+            "allowsPrepopulate": true,
+            "inputName": "job_id"
+        },
+        {
+            "id": 15,
+            "type": "hidden",
+            "label": "Job Title",
+            "defaultValue": "",
+            "allowsPrepopulate": true,
+            "inputName": "job_title"
+        },
+        {
+            "id": 16,
+            "type": "hidden",
+            "label": "Job Reference",
+            "defaultValue": "",
+            "allowsPrepopulate": true,
+            "inputName": "job_ref"
+        },
+        {
+            "id": 18,
+            "type": "hidden",
+            "label": "Job Link",
+            "defaultValue": "",
+            "allowsPrepopulate": true,
+            "inputName": "job_url"
+        },
+        {
+            "id": 19,
+            "type": "hidden",
+            "label": "Location",
+            "defaultValue": "",
+            "allowsPrepopulate": true,
+            "inputName": "job_location"
+        },
+        {
+            "id": 20,
+            "type": "hidden",
+            "label": "Department",
+            "defaultValue": "",
+            "allowsPrepopulate": true,
+            "inputName": "job_department"
+        },
+        {
+            "id": 21,
+            "type": "hidden",
+            "label": "Closing Date",
+            "defaultValue": "",
+            "allowsPrepopulate": true,
+            "inputName": "job_closing"
+        }
+    ],
+    "confirmations": {
+        "CONFIRMATION_ID": {
+            "id": "CONFIRMATION_ID",
+            "name": "Default Confirmation",
+            "isDefault": true,
+            "type": "message",
+            "message": "<div class=\"kwv-career-confirmation\"><p class=\"kwv-career-confirmation__title\">Thank you, {Name:2}.</p><p>Your application[gravityforms action=\"conditional\" merge_tag=\"{Job Title:15}\" condition=\"isnot\" value=\"\"] for <strong>{Job Title:15}</strong>[/gravityforms][gravityforms action=\"conditional\" merge_tag=\"{Job Reference:16}\" condition=\"isnot\" value=\"\"] (Ref {Job Reference:16})[/gravityforms] has been received, and a copy is on its way to {Email:1}.</p><p>Should you not hear from us within one month of the closing date of the advert, kindly regard your application as unsuccessful.</p></div>"
+        }
+    },
+    "notifications": {
+        "kwv_hr_career_application": {
+            "id": "kwv_hr_career_application",
+            "isActive": true,
+            "name": "HR — New Application",
+            "event": "form_submission",
+            "toType": "email",
+            "to": "careers@example.org",
+            "from": "{admin_email}",
+            "fromName": "KWV Careers",
+            "replyTo": "{Email:1}",
+            "bcc": "",
+            "subject": "Job application: {Job Title:15} (Ref {Job Reference:16}) — {Name:2} {Surname:3}",
+            "message": "A new job application has been submitted through the KWV website.\n\nPOSITION\nJob title:      {Job Title:15}\nReference:      {Job Reference:16}\nDepartment:     {Department:20}\nLocation:       {Location:19}\nClosing date:   {Closing Date:21}\nJob posting:    {Job Link:18}\n\nAPPLICANT\nName:           {Name:2} {Surname:3}\nEmail:          {Email:1}\nPhone:          {Phone:10}\nCV:             {CV:11}\n                (also attached to this email)\n\nSUBMISSION\nReceived:       {date_dmy}\nSubmitted from: {embed_url}\nEntry ID:       {entry_id}\nView entry:     {entry_url}\n\nReply to this email to respond to the applicant directly.",
+            "message_format": "text",
+            "disableAutoformat": true,
+            "enableAttachments": true,
+            "conditionalLogic": []
+        },
+        "kwv_user_career_application": {
+            "id": "kwv_user_career_application",
+            "isActive": true,
+            "name": "Applicant Confirmation",
+            "event": "form_submission",
+            "toType": "field",
+            "to": "1",
+            "from": "{admin_email}",
+            "fromName": "KWV Careers",
+            "replyTo": "careers@example.org",
+            "bcc": "",
+            "subject": "We’ve received your application — KWV",
+            "message": "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><title>KWV</title></head><body style=\"margin:0;padding:0;background-color:#f4f1ea;\"><span style=\"display:none!important;visibility:hidden;opacity:0;height:0;width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#f4f1ea;\">Thank you for applying to KWV — here’s a copy of your application.</span><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"background-color:#f4f1ea;\"><tr><td align=\"center\" style=\"padding:24px 12px;\"><table role=\"presentation\" width=\"600\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:600px;max-width:600px;background-color:#ffffff;border:1px solid #eae4d6;border-radius:4px;\"><tr><td align=\"center\" style=\"background-color:#1c1c1c;padding:32px 32px 32px;border-radius:4px 4px 0 0;\"><a href=\"https://example.org/\" style=\"text-decoration:none;\"><span style=\"font-family:Georgia,'Times New Roman',serif;font-size:28px;letter-spacing:8px;color:#ffffff;\">KWV</span></a></td></tr><tr><td style=\"padding:36px 34px 12px;\"><h1 style=\"margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:25px;line-height:32px;font-weight:400;color:#1c1c1c;\">Thank you, {Name:2}</h1><p style=\"margin:0 0 16px;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:24px;color:#3d3d3d;\">Thank you for your interest in joining KWV. We’ve received your application and our HR team will review it against the requirements of the position.</p><p style=\"margin:0 0 16px;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:24px;color:#3d3d3d;\">For your records, here’s a summary of your application:</p><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse;margin:22px 0 12px;\">[gravityforms action=\"conditional\" merge_tag=\"{Job Title:15}\" condition=\"isnot\" value=\"\"]<tr><td style=\"padding:11px 14px 11px 0;border-bottom:1px solid #eae4d6;font-family:Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#8a7a4f;width:42%;vertical-align:top;\">Position</td><td style=\"padding:11px 0;border-bottom:1px solid #eae4d6;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:22px;color:#1c1c1c;vertical-align:top;\">{Job Title:15}</td></tr>[/gravityforms][gravityforms action=\"conditional\" merge_tag=\"{Job Reference:16}\" condition=\"isnot\" value=\"\"]<tr><td style=\"padding:11px 14px 11px 0;border-bottom:1px solid #eae4d6;font-family:Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#8a7a4f;width:42%;vertical-align:top;\">Reference</td><td style=\"padding:11px 0;border-bottom:1px solid #eae4d6;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:22px;color:#1c1c1c;vertical-align:top;\">{Job Reference:16}</td></tr>[/gravityforms][gravityforms action=\"conditional\" merge_tag=\"{Department:20}\" condition=\"isnot\" value=\"\"]<tr><td style=\"padding:11px 14px 11px 0;border-bottom:1px solid #eae4d6;font-family:Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#8a7a4f;width:42%;vertical-align:top;\">Department</td><td style=\"padding:11px 0;border-bottom:1px solid #eae4d6;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:22px;color:#1c1c1c;vertical-align:top;\">{Department:20}</td></tr>[/gravityforms][gravityforms action=\"conditional\" merge_tag=\"{Location:19}\" condition=\"isnot\" value=\"\"]<tr><td style=\"padding:11px 14px 11px 0;border-bottom:1px solid #eae4d6;font-family:Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#8a7a4f;width:42%;vertical-align:top;\">Location</td><td style=\"padding:11px 0;border-bottom:1px solid #eae4d6;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:22px;color:#1c1c1c;vertical-align:top;\">{Location:19}</td></tr>[/gravityforms][gravityforms action=\"conditional\" merge_tag=\"{Closing Date:21}\" condition=\"isnot\" value=\"\"]<tr><td style=\"padding:11px 14px 11px 0;border-bottom:1px solid #eae4d6;font-family:Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#8a7a4f;width:42%;vertical-align:top;\">Closing date</td><td style=\"padding:11px 0;border-bottom:1px solid #eae4d6;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:22px;color:#1c1c1c;vertical-align:top;\">{Closing Date:21}</td></tr>[/gravityforms]<tr><td style=\"padding:11px 14px 11px 0;border-bottom:1px solid #eae4d6;font-family:Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#8a7a4f;width:42%;vertical-align:top;\">Name</td><td style=\"padding:11px 0;border-bottom:1px solid #eae4d6;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:22px;color:#1c1c1c;vertical-align:top;\">{Name:2} {Surname:3}</td></tr><tr><td style=\"padding:11px 14px 11px 0;border-bottom:1px solid #eae4d6;font-family:Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#8a7a4f;width:42%;vertical-align:top;\">Email</td><td style=\"padding:11px 0;border-bottom:1px solid #eae4d6;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:22px;color:#1c1c1c;vertical-align:top;\">{Email:1}</td></tr><tr><td style=\"padding:11px 14px 11px 0;border-bottom:1px solid #eae4d6;font-family:Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#8a7a4f;width:42%;vertical-align:top;\">Phone</td><td style=\"padding:11px 0;border-bottom:1px solid #eae4d6;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:22px;color:#1c1c1c;vertical-align:top;\">{Phone:10}</td></tr><tr><td style=\"padding:11px 14px 11px 0;border-bottom:1px solid #eae4d6;font-family:Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#8a7a4f;width:42%;vertical-align:top;\">CV</td><td style=\"padding:11px 0;border-bottom:1px solid #eae4d6;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:22px;color:#1c1c1c;vertical-align:top;\">Received</td></tr><tr><td style=\"padding:11px 14px 11px 0;border-bottom:1px solid #eae4d6;font-family:Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#8a7a4f;width:42%;vertical-align:top;\">Submitted</td><td style=\"padding:11px 0;border-bottom:1px solid #eae4d6;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:22px;color:#1c1c1c;vertical-align:top;\">{date_dmy}</td></tr></table><p style=\"margin:0 0 16px;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:24px;color:#3d3d3d;\">Should you not hear from us within one month of the closing date of the advert, kindly regard your application as unsuccessful.</p><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin:26px 0 12px;\"><tr><td align=\"center\" bgcolor=\"#B29143\" style=\"border-radius:2px;\"><a href=\"https://example.org/careers/\" style=\"display:inline-block;padding:14px 32px;font-family:Helvetica,Arial,sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:#1c1c1c;text-decoration:none;\">View current vacancies</a></td></tr></table></td></tr><tr><td style=\"padding:26px 34px 34px;\"><div style=\"height:1px;background-color:#eae4d6;line-height:1px;font-size:1px;margin:0 0 22px;\">&nbsp;</div><p style=\"margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:14px;letter-spacing:4px;color:#1c1c1c;\">KWV</p><p style=\"margin:0 0 10px;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:18px;color:#8a8a8a;\">Paarl, South Africa &middot; Crafting fine wine &amp; spirits since 1918</p><p style=\"margin:0;font-family:Helvetica,Arial,sans-serif;font-size:11px;line-height:16px;color:#b3ac9b;\">You’re receiving this because you applied for a position at KWV via kwv.co.za. Reply to this email with any questions about your application.</p></td></tr></table></td></tr></table></body></html>",
+            "disableAutoformat": true,
+            "enableAttachments": false,
+            "conditionalLogic": []
+        }
+    },
+    "id": 1
+}

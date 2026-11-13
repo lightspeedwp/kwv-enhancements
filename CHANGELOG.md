@@ -9,6 +9,18 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 
+- **PHP test tooling** (development only; nothing ships to the site). Composer dev dependencies,
+  a Brain Monkey **unit** suite and a WordPress-test-library **integration** suite (real WordPress,
+  WooCommerce, Secure Custom Fields and, when available, Gravity Forms against a throwaway MySQL
+  database), a merged **80% line-coverage gate** on `modules/`, WordPress Coding Standards
+  (`phpcs.xml.dist`), PHPStan level 5 (`phpstan.neon.dist`) and a GitHub Actions workflow
+  (`.github/workflows/php-tests.yml`) for pull requests. See `tests/README.md`.
+- **Test hardening.** Mutation testing with Infection against both suites (`composer test:mutation`;
+  CI fails the unit run below 95% covered-code MSI), golden-file snapshots of the careers form, the
+  branded emails and the dynamic block markup (`tests/__snapshots__/`), and a hook contract
+  (`tests/Support/PluginHooks.php`) pinning every hook's priority and argument count in both suites.
+  Integration tests never touch the network (`WP_HTTP_BLOCK_EXTERNAL`).
+
 - **Brands — brand page content** (`modules/brands.php`, `acf-json/group_kwv_brands.json`,
   `blocks/brand-awards/`). Client change request (Estimate 3439, "KWV - Brand page redesign").
   - New **Brand Page Content** field group on every Brand (Products → Brands): *Brand logo*,

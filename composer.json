@@ -1,0 +1,92 @@
+{
+	"name": "lightspeedwp/kwv-enhancements",
+	"description": "Site-specific enhancements for the KWV 2026 site. Composer is used for development tooling only; the plugin has no runtime dependencies.",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"require": {
+		"php": ">=7.4"
+	},
+	"require-dev": {
+		"brain/monkey": "^2.7",
+		"infection/infection": "^0.32.6",
+		"mockery/mockery": "^1.6",
+		"php-parallel-lint/php-parallel-lint": "^1.4",
+		"php-stubs/woocommerce-stubs": "^10.9",
+		"phpstan/extension-installer": "^1.4",
+		"phpstan/phpstan": "^2.1",
+		"phpunit/phpcov": "^8.2",
+		"phpunit/phpunit": "^9.6",
+		"roots/wordpress-no-content": "7.1.3",
+		"szepeviktor/phpstan-wordpress": "^2.0",
+		"wp-coding-standards/wpcs": "^3.3",
+		"wp-phpunit/wp-phpunit": "7.1.3",
+		"yoast/phpunit-polyfills": "^2.0"
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"KWV\\Enhancements\\Tests\\": "tests/"
+		}
+	},
+	"config": {
+		"platform": {
+			"php": "8.2"
+		},
+		"sort-packages": true,
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true,
+			"phpstan/extension-installer": true,
+			"roots/wordpress-core-installer": false,
+			"infection/extension-installer": false
+		},
+		"process-timeout": 0
+	},
+	"scripts": {
+		"test": [
+			"@test:unit",
+			"@test:integration"
+		],
+		"test:unit": "phpunit --configuration phpunit.xml.dist",
+		"test:integration": "phpunit --configuration phpunit.integration.xml.dist",
+		"test:coverage": [
+			"@php -r \"array_map('unlink', glob('build/coverage/*.cov') ?: array());\"",
+			"@php -d pcov.enabled=1 vendor/bin/phpunit --configuration phpunit.xml.dist --coverage-php build/coverage/unit.cov",
+			"@php -d pcov.enabled=1 vendor/bin/phpunit --configuration phpunit.integration.xml.dist --coverage-php build/coverage/integration.cov",
+			"phpcov merge --clover build/coverage/clover.xml --html build/coverage/html --text php://stdout build/coverage",
+			"@php tests/bin/coverage-check.php build/coverage/clover.xml 80"
+		],
+		"lint": [
+			"@lint:syntax",
+			"@wpcs:scan"
+		],
+		"lint:syntax": "parallel-lint --exclude vendor --exclude build .",
+		"wpcs:scan": "phpcs",
+		"wpcs:fix": "phpcbf",
+		"analyse": "phpstan analyse --memory-limit=1G",
+		"test:mutation": [
+			"@test:mutation:unit",
+			"@test:mutation:integration"
+		],
+		"test:mutation:unit": "infection --only-covering-test-cases --min-covered-msi=95 --no-progress",
+		"test:mutation:integration": [
+			"@php tests/bin/mutation-databases.php 6",
+			"@putenv WP_TESTS_SKIP_INSTALL=1",
+			"infection --configuration=infection.integration.json5 --only-covering-test-cases --no-progress"
+		],
+		"test:snapshots:update": [
+			"@putenv UPDATE_SNAPSHOTS=1",
+			"@test"
+		]
+	},
+	"scripts-descriptions": {
+		"test": "Run the unit suite, then the integration suite.",
+		"test:unit": "Run the fast unit suite (WordPress mocked with Brain Monkey; no database).",
+		"test:integration": "Run the integration suite against a throwaway WordPress test database.",
+		"test:coverage": "Run both suites with PCOV, merge the coverage and fail below 80% of lines in modules/.",
+		"lint": "PHP syntax check plus WordPress Coding Standards.",
+		"analyse": "PHPStan static analysis (WordPress + WooCommerce stubs).",
+		"test:mutation": "Mutation testing (Infection) against both suites. Slow; run before merging a change to modules/.",
+		"test:mutation:unit": "Mutation testing against the unit suite; fails below 95% covered-code MSI.",
+		"test:mutation:integration": "Mutation testing against the integration suite (one test database per thread).",
+		"test:snapshots:update": "Rewrite tests/__snapshots__ after an intended output change; review the diff before committing."
+	}
+}

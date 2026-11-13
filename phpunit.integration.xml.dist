@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!--
+	Integration suite: real WordPress (with WooCommerce, Secure Custom Fields and,
+	when available, Gravity Forms) installed into a throwaway test database.
+	See tests/README.md for how the database and third-party plugins are provided.
+-->
+<phpunit
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+	bootstrap="tests/Integration/bootstrap.php"
+	colors="true"
+	beStrictAboutTestsThatDoNotTestAnything="true"
+	cacheResultFile="build/cache/phpunit-integration.result.cache"
+>
+	<testsuites>
+		<testsuite name="integration">
+			<directory suffix="Test.php">tests/Integration</directory>
+		</testsuite>
+	</testsuites>
+	<coverage includeUncoveredFiles="true" processUncoveredFiles="false">
+		<include>
+			<directory suffix=".php">modules</directory>
+		</include>
+	</coverage>
+</phpunit>

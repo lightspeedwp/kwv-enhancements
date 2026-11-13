@@ -10,3 +10,9 @@ Thumbs.db
 
 # Build / logs
 *.log
+
+# PHP test tooling (composer.json is dev-only)
+/build/
+/.phpunit.result.cache
+/.phpunit.cache/
+/.phpcs-cache
