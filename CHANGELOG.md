@@ -7,6 +7,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Fixed
+
+- **`kwv/meta-date` shows the right day late in the evening.** A stored `Ymd` date is now read as
+  midnight in the site's timezone. It used to pick up the current UTC time of day, so after
+  22:00 UTC a South African site showed the next day. The careers card now binds its date to
+  this source to show the closing date. Integration tests cover both.
+
 ### Added
 
 - **PHP test tooling** (development only; nothing ships to the site). Composer dev dependencies,

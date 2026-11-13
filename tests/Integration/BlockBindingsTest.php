@@ -90,6 +90,48 @@ final class BlockBindingsTest extends TestCase {
 		);
 	}
 
+	/**
+	 * A stored Ymd date is a calendar day in the site's timezone. Parsing it
+	 * without a time reset picked up the current time of day in UTC, so after
+	 * 22:00 UTC a South African site showed the next day's date.
+	 */
+	public function test_meta_date_is_midnight_in_the_site_timezone(): void {
+		update_option( 'timezone_string', 'Africa/Johannesburg' );
+		$id = self::factory()->post->create( array( 'meta_input' => array( 'when' => '20261115' ) ) );
+
+		$this->assertSame(
+			'2026-11-15T00:00:00+02:00',
+			$this->bindings->get_meta_date(
+				array(
+					'key'    => 'when',
+					'format' => 'c',
+				),
+				$this->block( $id )
+			)
+		);
+	}
+
+	/**
+	 * The career card binds core/post-date's `datetime` to the closing date,
+	 * so the listing shows when a job closes rather than when it was posted.
+	 */
+	public function test_meta_date_drives_a_bound_post_date_block(): void {
+		update_option( 'timezone_string', 'Africa/Johannesburg' );
+		$id = self::factory()->post->create(
+			array(
+				'post_date'  => '2026-07-06 15:00:37',
+				'meta_input' => array( 'kwv_career_closing_date' => '20261115' ),
+			)
+		);
+
+		$block = new \WP_Block(
+			parse_blocks( '<!-- wp:post-date {"format":"j F Y","metadata":{"bindings":{"datetime":{"source":"kwv/meta-date","args":{"key":"kwv_career_closing_date","format":"Y-m-d"}}}}} /-->' )[0],
+			array( 'postId' => $id )
+		);
+
+		$this->assertStringContainsString( '<time datetime="2026-11-15">15 November 2026</time>', $block->render() );
+	}
+
 	public function test_meta_date_shows_an_unparseable_value_as_stored(): void {
 		$id = self::factory()->post->create( array( 'meta_input' => array( 'when' => 'TBC' ) ) );
 

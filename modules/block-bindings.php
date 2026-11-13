@@ -145,7 +145,10 @@ class BlockBindings implements Module {
 			return '';
 		}
 
-		$date = \DateTime::createFromFormat( 'Ymd', $raw );
+		// `!` resets the time to midnight: without it the parse takes the current
+		// time of day (in UTC), so late in the evening the date rolls into the
+		// next day once it's shown in the site's timezone.
+		$date = \DateTime::createFromFormat( '!Ymd', $raw, wp_timezone() );
 
 		if ( ! $date ) {
 			return $raw; // Unexpected format — show what's stored rather than nothing.
