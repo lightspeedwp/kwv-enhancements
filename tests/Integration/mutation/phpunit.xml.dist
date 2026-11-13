@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!--
+	The integration suite, as Infection sees it (infection.integration.json5
+	points its phpUnit.configDir here). Same suite as phpunit.integration.xml.dist,
+	with paths relative to this folder.
+-->
+<phpunit
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="../../../vendor/phpunit/phpunit/phpunit.xsd"
+	bootstrap="../bootstrap.php"
+	colors="false"
+	beStrictAboutTestsThatDoNotTestAnything="true"
+	cacheResult="false"
+>
+	<testsuites>
+		<testsuite name="integration">
+			<directory suffix="Test.php">..</directory>
+		</testsuite>
+	</testsuites>
+	<coverage includeUncoveredFiles="true" processUncoveredFiles="false">
+		<include>
+			<directory suffix=".php">../../../modules</directory>
+		</include>
+	</coverage>
+</phpunit>

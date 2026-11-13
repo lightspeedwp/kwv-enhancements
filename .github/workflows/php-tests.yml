@@ -1,0 +1,124 @@
+# PHP quality gate: syntax + coding standards, static analysis, and the unit and
+# integration suites with an 80% line-coverage floor on modules/.
+#
+# Third-party plugins are never committed: WooCommerce and Secure Custom Fields
+# are downloaded from wordpress.org. Gravity Forms and WooCommerce Subscriptions
+# are commercial, so CI runs without them; tests that need Gravity Forms skip
+# themselves and that logic is covered by the unit suite instead.
+name: PHP tests
+
+on:
+  pull_request:
+    branches: [develop, master, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: php-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PHP_VERSION: '8.2'
+  WOOCOMMERCE_VERSION: '10.9.1'
+  SCF_VERSION: '6.9.1'
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          coverage: none
+          tools: composer:v2
+      - run: composer install --no-interaction --no-progress
+      - name: PHP syntax
+        run: composer lint:syntax
+      - name: WordPress Coding Standards
+        # The modules have pre-existing WPCS findings (see tests/README.md).
+        # Reported, but not blocking, until they are cleaned up.
+        continue-on-error: true
+        run: composer wpcs:scan
+
+  analyse:
+    name: Static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          coverage: none
+          tools: composer:v2
+      - run: composer install --no-interaction --no-progress
+      - run: composer analyse -- --no-progress
+
+  test:
+    name: Unit + integration (coverage)
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: kwv_enhancements_tests
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      WP_TESTS_DB_NAME: kwv_enhancements_tests
+      WP_TESTS_DB_USER: root
+      WP_TESTS_DB_PASSWORD: root
+      WP_TESTS_DB_HOST: 127.0.0.1:3306
+      KWV_WP_PLUGINS_DIR: ${{ github.workspace }}/../wp-plugins
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mysqli, gd, intl
+          coverage: pcov
+          ini-values: pcov.enabled=0
+          tools: composer:v2
+      - run: composer install --no-interaction --no-progress
+      - name: Download WooCommerce and Secure Custom Fields
+        run: |
+          mkdir -p "$KWV_WP_PLUGINS_DIR"
+          cd "$KWV_WP_PLUGINS_DIR"
+          for zip in "woocommerce.${WOOCOMMERCE_VERSION}" "secure-custom-fields.${SCF_VERSION}"; do
+            curl -fsSL -o plugin.zip "https://downloads.wordpress.org/plugin/${zip}.zip"
+            unzip -q plugin.zip
+            rm plugin.zip
+          done
+      - name: Run both suites with coverage (fails below 80%)
+        run: composer test:coverage
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage-html
+          path: build/coverage/html
+          if-no-files-found: ignore
+
+  mutation:
+    name: Mutation testing (unit suite)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          coverage: pcov
+          ini-values: pcov.enabled=0
+          tools: composer:v2
+      - run: composer install --no-interaction --no-progress
+      - name: Infection (fails below 95% covered-code MSI)
+        run: composer test:mutation:unit -- --threads=max --logger-github

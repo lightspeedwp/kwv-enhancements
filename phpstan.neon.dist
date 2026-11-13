@@ -1,0 +1,23 @@
+# PHPStan for the plugin's own code. WordPress and WooCommerce come from stubs
+# (szepeviktor/phpstan-wordpress, php-stubs/woocommerce-stubs); Gravity Forms
+# is commercial and has no published stubs, so its symbols are ignored below.
+includes:
+	- phpstan-baseline.neon
+
+parameters:
+	level: 5
+	phpVersion: 70400
+	paths:
+		- kwv-enhancements.php
+		- modules
+	bootstrapFiles:
+		- tests/phpstan-constants.php
+	scanFiles:
+		- vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+	ignoreErrors:
+		-
+			identifier: class.notFound
+			message: '#(GFAPI|GF_Field)#'
+		-
+			identifier: function.notFound
+			message: '#(rgar|rgpost|gravity_form|gravity_form_enqueue_scripts|gf_upgrade)#'
