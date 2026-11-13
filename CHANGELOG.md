@@ -7,6 +7,17 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Added (JS test foundation, 2026-11-12)
+
+- **Unit tests** for `assets/careers-modal.js` and the editor scripts in `blocks/` with Vitest and jsdom: 26 cases, 100% coverage, and the run fails below 80%. Tests only; the scripts ship unchanged. See `tests/js/README.md`.
+- **ESLint** with the WordPress recommended rules. `blocks/` is linted as ES5, as its files promise.
+- **CI**: lint and unit tests with coverage on pull requests to `develop` and `master`.
+- **Dev tooling only**: `package.json`, `package-lock.json`, `tests/` and the config files. Leave them out of any plugin zip or deploy.
+
+### Changed (JS test foundation, 2026-11-12)
+
+- **JSDoc only** in `assets/careers-modal.js` (a `@return` description). No behaviour change.
+
 ### Fixed
 
 - **`kwv/meta-date` shows the right day late in the evening.** A stored `Ymd` date is now read as

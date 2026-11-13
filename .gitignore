@@ -16,3 +16,6 @@ Thumbs.db
 /.phpunit.result.cache
 /.phpunit.cache/
 /.phpcs-cache
+
+# Coverage reports (npm test)
+/coverage/
