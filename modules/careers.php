@@ -216,7 +216,7 @@ class Careers extends PostTypeModule {
 		}
 
 		$closing = (string) get_post_meta( $post_id, 'kwv_career_closing_date', true );
-		$date    = '' !== $closing ? \DateTime::createFromFormat( 'Ymd', $closing, wp_timezone() ) : false;
+		$date    = '' !== $closing ? \DateTime::createFromFormat( '!Ymd', $closing, wp_timezone() ) : false;
 
 		return array(
 			'job_id'         => (string) $post_id,

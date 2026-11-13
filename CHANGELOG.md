@@ -13,6 +13,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   midnight in the site's timezone. It used to pick up the current UTC time of day, so after
   22:00 UTC a South African site showed the next day. The careers card now binds its date to
   this source to show the closing date. Integration tests cover both.
+- **Event booking dropdown labels use the right day.** `BookingForm::choice_label()` had the same
+  bug, so a late-evening request could label an event with the next day's date. It now reads the
+  date as local midnight; a unit test covers it. The careers job-details date uses the same parse.
 
 ### Added
 
